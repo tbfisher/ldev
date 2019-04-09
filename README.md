@@ -108,11 +108,7 @@ xdebug dis
         -   debug: `drush-debug`
         -   profile: `drush-profile`
 
-This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths:
-
--   `/var/www/web` -> `[path_to_this_repo]/code/example7`
--   `/var/www/drush` -> `[path_to_this_repo]/code/drush`
-
+This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths. Look in the `docker-compose*.yml` files, the php containers declare the mappings as `volumes`.
 
 #### Profile with Webgrind
 
