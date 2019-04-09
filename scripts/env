@@ -120,6 +120,25 @@ pull() {
     $pull_script "$@"
 }
 
+# clean build artifacts
+clean() {
+    local response
+    response=$(util::prompt "Are you sure (y|N)?")
+    case "$response" in
+        y|yes)
+            echo Trying to run chown via sudo to delete the code directory. You may be prompted for your password.
+            sudo chown -R "$USER" code
+            chmod -R u+w code/*
+            rm -rf \
+                .env \
+                code
+            ;;
+        *)
+            echo Clean canceled.
+            ;;
+    esac
+}
+
 # enable/disable xdebug in a php-fpm container
 xdebug() {
     cd "$proj_dir" || return 1

@@ -150,9 +150,3 @@ Delete containers. `-v` will also delete volumes (database, files).
 ```bash
 docker-compose down -v
 ```
-
-Delete all build artifacts (code).
-
-```bash
-chmod -R +w code/ && rm -rf code/
-```
