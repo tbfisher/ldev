@@ -15,19 +15,13 @@
   -   [pv](http://www.ivarch.com/programs/pv.shtml)
   -   [jq](https://stedolan.github.io/jq/)
 
-2. Copy `env_example` to `.env`:
-
-  ```bash
-  cp env_example .env
-  ```
-
-  Optionally edit `.env` with your own settings.
-
-3. Build -- checks out code and configures it for this local hosting environment:
+2. Build -- checks out code and configures it for this local hosting environment:
 
   ```bash
   ./scripts/build
   ```
+
+3. Optionally edit `.env` with your own settings.
 
 4. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
 
