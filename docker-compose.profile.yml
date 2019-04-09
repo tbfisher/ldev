@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+
+  php:
+    environment:
+      XDEBUG_CONFIG: "profiler_output_dir=/tmp/webgrind"
+    volumes:
+      - "webgrind:/tmp/webgrind:rw"
+
+  webgrind:
+    image: tbfisher/webgrind
+    environment:
+      XDEBUG_OUTPUT_DIR: /tmp
+      WEBGRIND_STORAGE_DIR: /tmp
+      PHP_MAX_EXECUTION_TIME: 1200
+    volumes:
+      - "webgrind:/tmp:rw"
+    labels:
+      - 'traefik.backend=webgrind'
+      - 'traefik.port=8080'
+      - 'traefik.frontend.rule=Host:webgrind.${BASE_DOMAIN}'
+      - 'traefik.frontend.entryPoints=http'
+
+  netdata:
+    image: titpetric/netdata
+    cap_add:
+      - SYS_PTRACE
+    volumes:
+      - "webgrind:/tmp:rw"
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+    labels:
+      - 'traefik.backend=netdata'
+      - 'traefik.port=19999'
+      - 'traefik.frontend.rule=Host:netdata.${BASE_DOMAIN}'
+      - 'traefik.frontend.entryPoints=http'
+
+volumes:
+  webgrind:
+    driver: local

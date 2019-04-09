@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# exit on error, unset vars
+set -eu
+# exit early for errors in pipelines
+set -o pipefail
+# debugging
+# set -x
+
+# drush
+if [ ! -d code/drush ]; then
+    echo installing drush
+    git clone --depth 1 --branch 8.2.1 git@github.com:drush-ops/drush.git code/drush
+    composer --working-dir=code/drush install -o --no-dev
+    ./code/drush/drush dl --destination=code/drush/commands registry_rebuild-7.x composer-8.x
+fi
+
+# drupal
+conf_path=conf/example7
+build_path=code/example7
+if [ ! -d $build_path ]; then
+    echo installing drupal
+    git_origin=ssh://codeserver.dev.8c5c12cf-e8b4-4fff-8a59-34472c80dba7@codeserver.dev.8c5c12cf-e8b4-4fff-8a59-34472c80dba7.drush.in:2222/~/repository.git
+    #git_c3=
+
+    git clone "$git_origin" $build_path
+
+    ## push to c3 repo when pushing to platform
+    #git -C $build_path remote add c3 "$git_c3"
+    #git -C $build_path remote set-url origin --push "$git_origin"
+    #git -C $build_path remote set-url origin --push --add "$git_c3"
+    #git -C $build_path fetch --all
+fi
+echo configuring drupal
+chmod +w $build_path/sites/default
+rm -rf $build_path/sites/default/settings.local.php
+cp $conf_path/sites/default/settings.local.php $build_path/sites/default/
+# map files directories to volumes so they survive container destruction.
+# @see docker-compose.yml
+rm -rf $build_path/sites/default/files
+ln -sf /var/www_files/public $build_path/sites/default/files
+# ln -sf /var/www_files/private $build_path/sites/default/private
+chmod -w $build_path/sites/default

@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+
+# Sets up bash environment.
+
+# Gets the directory containing this file.
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# shellcheck source=inc/util.sh
+source "$script_dir/inc/util.sh"
+# shellcheck source=inc/docker.sh
+source "$script_dir/inc/docker.sh"
+
+# current directory
+pwd_dir=$(pwd)
+# git/project root directory
+proj_dir=$(util::realpath "$script_dir/..")
+
+# Include docker-compose env, creating if necessary.
+if [[ ! -f $proj_dir/.env ]]; then
+    cp "$proj_dir/env_example" "$proj_dir/.env"
+fi
+# shellcheck disable=SC1090
+source "$proj_dir/.env"
+
+php_container=php
+php_ide_config="serverName=$PRIMARY_DOMAIN.$BASE_DOMAIN"
+drush_container=/var/www/drush/drush
+drush_local=$proj_dir/code/drush/drush
+drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
+mysql_container=db
+mysql_user=root
+mysql_pass=$DATABASE_PASSWORD
+mysql_db=$DATABASE_NAME
+pull_script="$script_dir/pull"
+
+# drush as webserver user
+drush() {
+    (
+    cd "$proj_dir" &&
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --user www-data:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drush_container --uri="$drush_uri" "$@"
+    )
+}
+# drush as webserver user, with remote debugging
+drush-debug() {
+    (
+    cd "$proj_dir" &&
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --env "XDEBUG_CONFIG=remote_enable=1" \
+        --env "PHP_IDE_CONFIG=$php_ide_config" \
+        --user www-data:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drush_container --uri="$drush_uri" "$@"
+    )
+}
+# drush as webserver user, with profiling
+drush-profile() {
+    (
+    cd "$proj_dir" &&
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --env "XDEBUG_CONFIG=profiler_enable=1" \
+        --user www-data:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drush_container --uri="$drush_uri" "$@"
+    )
+}
+# drush as root user (in case you want drush to write code)
+drush-root() {
+    (
+    cd "$proj_dir" &&
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --user root:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drush_container --uri="$drush_uri" "$@"
+    )
+}
+
+# since we've aliased `drush`, provide a way to run drush on host
+drush-local() {
+    $drush_local "$@"
+}
+
+# interactive mysql in db container
+mysql() {
+    (
+    cd "$proj_dir" &&
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        "$(docker-compose ps -q $mysql_container)" \
+        mysql --user=$mysql_user --password="$mysql_pass" "$mysql_db" "$@"
+    )
+}
+# non-interative, for piping e.g. `cat some.sql | mysql-pipe`
+mysql-pipe() {
+    (
+    cd "$proj_dir" &&
+    docker exec -i \
+        "$(docker-compose ps -q $mysql_container)" \
+        mysql --user=$mysql_user --password="$mysql_pass" "$mysql_db"
+    )
+}
+# non-interative mysql-dump
+mysqldump() {
+    (
+    cd "$proj_dir" &&
+    docker exec -i \
+        "$(docker-compose ps -q $mysql_container)" \
+        mysqldump --user=$mysql_user --password="$mysql_pass" "$mysql_db"
+    )
+}
+
+# pull scripts
+pull() {
+    $pull_script "$@"
+}
+
+# enable/disable xdebug in a php-fpm container
+xdebug() {
+    cd "$proj_dir" || return 1
+    # container path to ini to write to
+    local ini_path
+    ini_path=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    # usage
+    if [[ -z "$1" ]]; then
+        cat << EOF
+usage: xdebug en|dis [container] [host-ip]
+EOF
+        return
+    fi
+    # defaults
+    local container
+    if [[ -z "$2" ]]; then
+        container=$php_container
+    else
+        container="$2"
+    fi
+    # docker host ip
+    local host_ip unameOut
+    if [[ -z "$3" ]]; then
+        host_ip="$(docker::host-ip)"
+    else
+        host_ip="$3"
+    fi
+    # grab zend_extension=path/to/xdebug.so line (changes per php build)
+    local zend_extension
+    zend_extension=$(docker-compose exec "$container" /bin/bash -c "cat '$ini_path' | grep -m 1 'zend_extension=' | sed 's/^;//'")
+    # update ini
+    local ini_contents
+    if [[ $1 == 'en' ]]; then
+        ini_contents=$(cat << EOF
+$zend_extension
+[xdebug]
+xdebug.remote_enable=1
+xdebug.remote_host=$host_ip
+xdebug.profiler_enable_trigger=1
+xdebug.profiler_output_dir=/tmp/webgrind
+EOF
+)
+    else
+        ini_contents=$(cat << EOF
+;$zend_extension
+EOF
+)
+    fi
+    echo setting xdebug config to:
+    echo ------
+    echo "$ini_contents"
+    echo ------
+    docker-compose exec "$container" /bin/bash -c "echo '$ini_contents' > '$ini_path'"
+    # restart php-fpm
+    echo restarting php-fpm...
+    docker-compose exec "$container" /bin/bash -c 'kill -USR2 1'
+    echo done.
+    cd "$pwd_dir" || return
+}
