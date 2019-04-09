@@ -42,15 +42,15 @@ $conf['file_temporary_path'] = '/tmp';
 $conf['file_public_path'] = 'sites/default/files';
 $conf['file_private_path'] = '/var/www_files/private';
 
-//$conf['redis_client_interface'] = 'PhpRedis';
-//$conf['cache_backends'][] = 'sites/all/modules/contrib/redis/redis.autoload.inc';
-//$conf['cache_default_class'] = 'Redis_Cache';
-//$conf['cache_class_cache_form'] = 'DrupalDatabaseCache';
-//$conf['lock_inc'] = 'sites/all/modules/contrib/redis/redis.lock.inc';
-//$conf['redis_client_host'] = 'cache';
-//$conf['redis_client_port'] = '6379';
-//$conf['redis_client_base'] = '0';
-//$conf['redis_client_password'] = '';
+$conf['redis_client_interface'] = 'PhpRedis';
+$conf['cache_backends'][] = 'sites/all/modules/contrib/redis/redis.autoload.inc';
+$conf['cache_default_class'] = 'Redis_Cache';
+$conf['cache_class_cache_form'] = 'DrupalDatabaseCache';
+$conf['lock_inc'] = 'sites/all/modules/contrib/redis/redis.lock.inc';
+$conf['redis_client_host'] = 'cache';
+$conf['redis_client_port'] = '6379';
+$conf['redis_client_base'] = '0';
+$conf['redis_client_password'] = '';
 
 $settings['hash_salt'] = 'dummy-value';
 

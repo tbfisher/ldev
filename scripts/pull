@@ -27,10 +27,9 @@ export LINES=32
 source "$script_dir/env"
 
 default_env=dev
-drush_alias_prefix=example7
+pantheon_project=example7
+pantheon_project_id=8c5c12cf-e8b4-4fff-8a59-34472c80dba7
 drupal_root="$proj_dir/code/example7"
-drupal_multisite_id=default
-drupal_stage_file_proxy_origin=
 backup_dir="$PULL_CACHEDIR"
 backup_prefix="$PULL_PREFIX"
 
@@ -47,12 +46,13 @@ ARGUMENTS:
     src-key   Environment key. Defaults to "$default_env".
 
 OPTIONS:
-    -l        List available src-key values and existing database dumpfiles.
+    -l        Update pantheon drush aliases and list available src-key values and existing local dumpfiles.
     -b        Backup local database.
     -c        Configure drupal for local development.
     -u        Run database updates after importing the database, and before any configuration.
     -d        Drupal database.
-    -D file   Specify drupal dumpfile.
+    -p        Prompt for remote backup.
+    -D file   Specify local dumpfile.
     -f        R-sync files.
     -F        R-sync private files.
     -v        Verbose output, prints every command to stdout.
@@ -67,10 +67,11 @@ drupal_backup=
 drupal_config=
 drupal_config_update=
 drupal_pull=
+drupal_pull_create=
 drupal_pull_dumpfile=
 drupal_pull_files=
 drupal_pull_private=
-while getopts ":lbcudD:fFvh" OPTION
+while getopts ":lbcudpD:fFvh" OPTION
 do
     case $OPTION in
         l)
@@ -86,6 +87,10 @@ do
             drupal_config_update=yes
             ;;
         d)
+            drupal_pull=yes
+            drupal_pull_create=yes
+            ;;
+        p)
             drupal_pull=yes
             ;;
         D)
@@ -125,7 +130,7 @@ if [ -z "${1+x}" ]; then
 else
     src_env=$1
 fi
-src=$drush_alias_prefix.$src_env
+src=pantheon.$pantheon_project.$src_env
 
 # environment
 if [[ -f $proj_dir/code ]]; then
@@ -137,42 +142,88 @@ fi
 src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
 
 list() {
+    # for terminus
+    terminus aliases
+
     local src_envs
-    src_envs=$(drush-local sa | grep -E "^@$drush_alias_prefix.[^.]+$" | sed "s/@$drush_alias_prefix\.//g")
+    src_envs=$(drush-local sa | grep "pantheon.$pantheon_project" | sed "s/@pantheon\.${pantheon_project}\.//g")
     echo src-alias values:
     echo "$src_envs"
     echo
 
     # ls will non-zero exit if pattern doesn't match
     set +e
-    echo database dumps:
-    ls -lh "$backup_dir/$backup_prefix.$drupal_multisite_id."*.sql.gz
+    echo 'source dumps (on local):'
+    ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_${src_env}_"*.sql.gz
+    echo
+    echo 'local backups:'
+    ls -lh "$backup_dir/$backup_prefix.local."*.sql.gz
     echo
     set -e
 }
 
 backup-drupal() {
     local dumpfile dumpfile_size
-    dumpfile=$backup_dir/$backup_prefix.$drupal_multisite_id.local.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
-    dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.$drupal_multisite_id.local.*.sql.gz")
+    dumpfile=$backup_dir/$backup_prefix.local.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
+    dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.local.*.sql.gz")
     drush sql-dump --structure-tables-list=cache,cache*,watchdog | \
         gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
     echo "wrote to $dumpfile"
 }
 
 pull-drupal() {
-    local dumpfile dumpfile_size
-    if [[ -z "$1" ]]; then
-        dumpfile=$backup_dir/$backup_prefix.$drupal_multisite_id.$src_env.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
-        dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.$drupal_multisite_id.$src_env.*.sql.gz")
-        drush-local "@$src" sql-dump --structure-tables-list=cache,cache*,watchdog | \
-            gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
-        echo "wrote to $dumpfile"
-    else
-        dumpfile="$1"
-        echo "skipping source dump, using $1"
+    local dumpfile file
+    dumpfile=
+
+    # generate backup
+    if [[ ! -z "$drupal_pull_create" ]]; then
+        echo "generating backup of $src_env environment..."
+        echo
+        terminus -n --element=database backup:create \
+            "$pantheon_project.$src_env"
+        echo figuring backup filename...
+        echo
+        local backups
+        backups=$(terminus --element=database --format=json backup:list \
+            "$pantheon_project.$src_env")
+        file=$(echo "$backups" | \
+            jq -r 'map( { file, date } ) | sort_by(.date) | last | .file')
+        dumpfile="$backup_dir/$backup_prefix.$file"
+        echo "downloading backup to $dumpfile ..."
+        echo
+        terminus backup:get --file="$file" --to="$dumpfile" \
+            "$pantheon_project.$src_env"
+    # use existing local
+    elif [[ ! -z "$1" ]]; then
+        # dumpfile exists
+        if [[ -f "$1" ]]; then
+            dumpfile="$1"
+        else
+            echo "WARNING: $1 not found."
+            echo
+        fi
     fi
 
+    # choose remote
+    while [[ -z "$dumpfile" ]]; do
+        echo listing source backups...
+        echo
+        terminus --element=database backup:list "$pantheon_project.$src_env"
+        file=$(util::prompt "Choose backup file, or [enter] to refresh")
+        case "$file" in
+            '')
+                ;;
+            *)
+                dumpfile="$backup_dir/$backup_prefix.$file"
+                echo "downloading $file to $dumpfile ..."
+                echo
+                terminus backup:get --file="$file" --to="$dumpfile" "$pantheon_project.$src_env"
+                ;;
+        esac
+    done
+
+    echo wiping destination database...
+    echo
     drush -yq sql-drop
 
     echo importing...
@@ -182,10 +233,11 @@ pull-drupal() {
 
 fix-volume-perms() {
     local cmds
+    # pantheon private dir is in public dir, ensure it exists.
+    cmds='mkdir -p /var/www_files/public/private;'
     # ensure files dirs writable by webserver.
-    cmds+="mkdir -p /var/www_files/{public,private}/$drupal_multisite_id;"
-    cmds+='chgrp -R www-data /var/www_files/public /var/www_files/private;'
-    cmds+='chmod -R g+w /var/www_files/public /var/www_files/private;'
+    cmds+='chgrp -R www-data /var/www_files/public;'
+    cmds+='chmod -R g+w /var/www_files/public;'
     docker-compose exec php /bin/bash -c "$cmds"
 }
 
@@ -212,20 +264,30 @@ configure-drupal() {
         drush -y updb
     fi
 
+    drush -y dis \
+        new_relic_rpm \
+        pantheon_apachesolr \
+        pantheon_api \
+        pantheon_login
     drush -y en \
         devel \
         stage_file_proxy
 
     # stage_file_proxy
-    if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
-        # uri from status
-        origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
-        # uri from alias
-        #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
-        drush -y vset stage_file_proxy_origin "$origin"
-    else
-        drush -y vset stage_file_proxy_origin "$drupal_stage_file_proxy_origin"
-    fi
+    drush -y vset stage_file_proxy_origin "http://$src_env-$pantheon_project.pantheonsite.io"
+
+    # search_api_solr
+    php=$(cat <<'EOS'
+$id = "pantheon";
+$options = search_api_server_load($id)->options;
+$options["scheme"] = "http";
+$options["host"] = "search";
+$options["port"] = "8983";
+$options["path"] = "/solr";
+search_api_server_edit($id, array("options" => $options));
+EOS
+)
+    drush ev "$php"
 
     drush user-unblock 1
     drush uli 1 admin/reports/status
@@ -236,23 +298,20 @@ pull-files-drupal() {
     local ssh_id
     ssh_id=~/.ssh/id_rsa
 
-    local status
-    status=$(drush-local "@$src" --format=json status)
-
-    local rsync_src container_id
-    rsync_src=$(echo "$src_alias" | jq -r '."remote-user" + "@" + ."remote-host"')
+    local src container_id jq
+    src="$src_env.$pantheon_project_id@appserver.$src_env.$pantheon_project_id.drush.in:files"
     container_id=$(docker-compose ps -q php)
+    jq='.[0].Mounts[] | select(.Destination == "/var/www_files/public") | .Source'
 
-    local jq src dst
+    # Private inside public files.
+    local dst
     case $1 in
         public)
-            src="$rsync_src:$(echo "$status" | \
-                jq -r '."%paths"."%root" + "/" + ."%paths"."%files"')"
-            jq='.[0].Mounts[] | select(.Destination == "/var/www_files/public") | .Source'
             dst=$(docker inspect "$container_id" | jq -r "$jq")
             echo Trying to run rsync via sudo to write to container volume. You may be prompted for your password.
-            sudo rsync -e "ssh -i $ssh_id" \
+            sudo rsync -e "ssh -p 2222 -i $ssh_id" \
                 -rLvz --size-only --ipv4 --progress --delete \
+                --exclude=/private \
                 --exclude=/css \
                 --exclude=/js \
                 --exclude=/styles \
@@ -261,15 +320,12 @@ pull-files-drupal() {
                 "$dst"
             ;;
         private)
-            src="$rsync_src:$(echo "$status" | jq -r '."%paths"."%private"')"
-            jq='.[0].Mounts[] | select(.Destination == "/var/www_files/private") | .Source'
             dst=$(docker inspect "$container_id" | jq -r "$jq")
             echo Trying to run rsync via sudo to write to container volume. You may be prompted for your password.
-            sudo rsync -e "ssh -i $ssh_id" \
-                -rLvz --size-only --ipv4 --progress --delete \
-                --exclude=/backup_migrate \
-                "$src/" \
-                "$dst"
+            sudo rsync -e "ssh -p 2222 -i $ssh_id" \
+                -rLvz --size-only --ipv4 --progress \
+                "${src}/private/" \
+                "$dst/private"
             ;;
     esac
 
