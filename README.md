@@ -15,19 +15,13 @@
   -   [pv](http://www.ivarch.com/programs/pv.shtml)
   -   [jq](https://stedolan.github.io/jq/)
 
-2. Copy `env_example` to `.env`:
-
-  ```bash
-  cp env_example .env
-  ```
-
-  Optionally edit `.env` with your own settings.
-
-3. Build -- checks out code and configures it for this local hosting environment:
+2. Build -- checks out code and configures it for this local hosting environment:
 
   ```bash
   ./scripts/build
   ```
+
+3. Optionally edit `.env` with your own settings.
 
 4. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
 
@@ -77,21 +71,6 @@
 
 \* if enabled via `.env`
 
-### Search
-
-To use search, populate solr index
-
-```bash
-# speed up by disabling stage file proxy
-drush -y dis stage_file_proxy
-drush sapi-c && drush sapi-i 0 0 25
-drush -y en stage_file_proxy
-```
-
-### Single-Sign-On
-
-If you got to [https://nahlink.localhost](https://nahlink.localhost) as an anonomous user, you get redirected to `http://idp.nahlink.localhost/simplesaml/module.php/core/loginuserpass.php?AuthState...`. This identity provider (IdP) is a simple mock NAH authentication service -- you can view/edit the users you can log in as in [conf/idp/authsources.php](conf/idp/authsources.php).
-
 ### Debugging
 
 #### Xdebug
@@ -110,15 +89,11 @@ xdebug dis
     -   profile: `XDEBUG_PROFILE=1`
 -   cli
     -   Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
-    -   [`scripts/env-nahlink`](scripts/env-nahlink) / [`scripts/env-nahealth`](scripts/env-nahealth) defines aliases:
+    -   [`scripts/env`](scripts/env) defines aliases:
         -   debug: `drush-debug`
         -   profile: `drush-profile`
 
-This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths:
-
--   `/var/www/web` -> `[path_to_this_repo]/code/example7`
--   `/var/www/drush` -> `[path_to_this_repo]/code/drush`
-
+This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths. Look in the `docker-compose*.yml` files, the php containers declare the mappings as `volumes`.
 
 #### Profile with Webgrind
 
@@ -149,10 +124,4 @@ Delete containers. `-v` will also delete volumes (database, files).
 
 ```bash
 docker-compose down -v
-```
-
-Delete all build artifacts (code).
-
-```bash
-chmod -R +w code/ && rm -rf code/
 ```

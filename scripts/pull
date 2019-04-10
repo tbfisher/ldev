@@ -30,6 +30,7 @@ default_env=dev
 pantheon_project=example7
 pantheon_project_id=8c5c12cf-e8b4-4fff-8a59-34472c80dba7
 drupal_root="$proj_dir/code/example7"
+php_container=php
 backup_dir="$PULL_CACHEDIR"
 backup_prefix="$PULL_PREFIX"
 
@@ -238,7 +239,7 @@ fix-volume-perms() {
     # ensure files dirs writable by webserver.
     cmds+='chgrp -R www-data /var/www_files/public;'
     cmds+='chmod -R g+w /var/www_files/public;'
-    docker-compose exec php /bin/bash -c "$cmds"
+    docker-compose exec $php_container /bin/bash -c "$cmds"
 }
 
 configure-drupal() {
@@ -300,7 +301,7 @@ pull-files-drupal() {
 
     local src container_id jq
     src="$src_env.$pantheon_project_id@appserver.$src_env.$pantheon_project_id.drush.in:files"
-    container_id=$(docker-compose ps -q php)
+    container_id=$(docker-compose ps -q $php_container)
     jq='.[0].Mounts[] | select(.Destination == "/var/www_files/public") | .Source'
 
     # Private inside public files.

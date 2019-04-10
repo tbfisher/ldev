@@ -7,6 +7,11 @@ set -o pipefail
 # debugging
 # set -x
 
+# Create docker-compose .env if necessary.
+if [[ ! -f .env ]]; then
+    cp env_example .env
+fi
+
 # drush
 if [ ! -d code/drush ]; then
     echo installing drush
