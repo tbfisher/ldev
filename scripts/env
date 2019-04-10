@@ -24,9 +24,10 @@ source "$proj_dir/.env"
 
 php_container=php
 php_ide_config="serverName=$PRIMARY_DOMAIN.$BASE_DOMAIN"
-drush_container=/var/www/drush/drush
-drush_local=$proj_dir/code/drush/drush
+drush_container=/var/www/vendor/bin/drush
+drush_local=$proj_dir/code/example8/vendor/bin/drush
 drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
+drupal_console_container=/var/www/vendor/bin/drupal
 mysql_container=db
 mysql_user=root
 mysql_pass=$DATABASE_PASSWORD
@@ -84,6 +85,18 @@ drush-root() {
 # since we've aliased `drush`, provide a way to run drush on host
 drush-local() {
     $drush_local "$@"
+}
+
+# drupal console
+drupal() {
+    (
+    cd "$proj_dir" && \
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --user root:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drupal_console_container "$@"
+    )
 }
 
 # interactive mysql in db container
