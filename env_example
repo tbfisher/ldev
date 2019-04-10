@@ -1,10 +1,10 @@
 # Here you can cutomize your variables.
 
-COMPOSE_PROJECT_NAME=example7
+COMPOSE_PROJECT_NAME=example8
 
 # ENV
 ENVIRONMENT=local
-PRIMARY_DOMAIN=example7
+PRIMARY_DOMAIN=example8
 BASE_DOMAIN=localhost
 
 # drupal
@@ -21,4 +21,4 @@ COMPOSE_FILE=docker-compose.yml
 # A place for database dumps.
 PULL_CACHEDIR=/tmp
 # Filename prefix for this project.
-PULL_PREFIX=example7
+PULL_PREFIX=example8

@@ -27,9 +27,9 @@ export LINES=32
 source "$script_dir/env"
 
 default_env=dev
-pantheon_project=example7
+pantheon_project=example8
 pantheon_project_id=8c5c12cf-e8b4-4fff-8a59-34472c80dba7
-drupal_root="$proj_dir/code/example7"
+#drupal_root="$proj_dir/code/example8"
 php_container=php
 backup_dir="$PULL_CACHEDIR"
 backup_prefix="$PULL_PREFIX"
@@ -239,6 +239,10 @@ fix-volume-perms() {
     # ensure files dirs writable by webserver.
     cmds+='chgrp -R www-data /var/www_files/public;'
     cmds+='chmod -R g+w /var/www_files/public;'
+    # ensure config dirs writable by webserver.
+    cmds+='mkdir -p /var/www/config-local;'
+    cmds+='chgrp -R www-data /var/www/web/sites/default/config /var/www/web/sites/default/config-local;'
+    cmds+='chmod -R g+w /var/www/web/sites/default/config /var/www/web/sites/default/config-local;'
     docker-compose exec $php_container /bin/bash -c "$cmds"
 }
 
@@ -248,24 +252,16 @@ configure-drupal() {
 
     fix-volume-perms
 
-    # download/update dev modules
-    # don't fail when offline
-    set +e
-    drush-local -y dl --destination="$drupal_root/sites/all/modules/local" \
-        devel-7.x               \
-        log_stdout-7.x          \
-        stage_file_proxy-7.x
-    drush -y en log_stdout
-    set -e
+    drush -y en \
+        log_stdout
 
-    # drush cc drush
-    drush rr
+    drush cr
 
     if [[ ! -z "$update" ]]; then
         drush -y updb
     fi
 
-    drush -y dis \
+    drush -y pmu \
         new_relic_rpm \
         pantheon_apachesolr \
         pantheon_api \
@@ -274,21 +270,12 @@ configure-drupal() {
         devel \
         stage_file_proxy
 
-    # stage_file_proxy
-    drush -y vset stage_file_proxy_origin "http://$src_env-$pantheon_project.pantheonsite.io"
+    set +e
+    drush -y csim local
+    set -e
 
-    # search_api_solr
-    php=$(cat <<'EOS'
-$id = "pantheon";
-$options = search_api_server_load($id)->options;
-$options["scheme"] = "http";
-$options["host"] = "search";
-$options["port"] = "8983";
-$options["path"] = "/solr";
-search_api_server_edit($id, array("options" => $options));
-EOS
-)
-    drush ev "$php"
+    # stage_file_proxy
+    drush -y cset stage_file_proxy.settings origin "http://$src_env-$pantheon_project.pantheonsite.io"
 
     drush user-unblock 1
     drush uli 1 admin/reports/status
