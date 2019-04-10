@@ -71,21 +71,6 @@
 
 \* if enabled via `.env`
 
-### Search
-
-To use search, populate solr index
-
-```bash
-# speed up by disabling stage file proxy
-drush -y dis stage_file_proxy
-drush sapi-c && drush sapi-i 0 0 25
-drush -y en stage_file_proxy
-```
-
-### Single-Sign-On
-
-If you got to [https://nahlink.localhost](https://nahlink.localhost) as an anonomous user, you get redirected to `http://idp.nahlink.localhost/simplesaml/module.php/core/loginuserpass.php?AuthState...`. This identity provider (IdP) is a simple mock NAH authentication service -- you can view/edit the users you can log in as in [conf/idp/authsources.php](conf/idp/authsources.php).
-
 ### Debugging
 
 #### Xdebug
@@ -104,7 +89,7 @@ xdebug dis
     -   profile: `XDEBUG_PROFILE=1`
 -   cli
     -   Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
-    -   [`scripts/env-nahlink`](scripts/env-nahlink) / [`scripts/env-nahealth`](scripts/env-nahealth) defines aliases:
+    -   [`scripts/env`](scripts/env) defines aliases:
         -   debug: `drush-debug`
         -   profile: `drush-profile`
 
