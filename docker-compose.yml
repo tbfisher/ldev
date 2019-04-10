@@ -47,7 +47,7 @@ services:
       - "files_private:/var/www_files/private:rw"
 
   web:
-    image: tbfisher/drupal-web:nginx-1.8
+    image: tbfisher/drupal-web:nginx-1.8-dev-1
     environment:
       WEB_DOCROOT: /var/www/web
       WEB_PHPFPM: "php:9000"
