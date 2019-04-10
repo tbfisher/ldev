@@ -23,7 +23,7 @@ $databases['default'] = [
 
 // Behind proxy.
 $conf['reverse_proxy'] = TRUE;
-$conf['reverse_proxy_addresses'] = array($_SERVER['REMOTE_ADDR']);
+$conf['reverse_proxy_addresses'] = [$_SERVER['REMOTE_ADDR']];
 // HTTPS behind proxy.
 if (
   isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
