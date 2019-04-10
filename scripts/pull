@@ -31,6 +31,7 @@ drush_alias_prefix=example7
 drupal_root="$proj_dir/code/example7"
 drupal_multisite_id=default
 drupal_stage_file_proxy_origin=
+php_container=php
 backup_dir="$PULL_CACHEDIR"
 backup_prefix="$PULL_PREFIX"
 
@@ -186,7 +187,7 @@ fix-volume-perms() {
     cmds+="mkdir -p /var/www_files/{public,private}/$drupal_multisite_id;"
     cmds+='chgrp -R www-data /var/www_files/public /var/www_files/private;'
     cmds+='chmod -R g+w /var/www_files/public /var/www_files/private;'
-    docker-compose exec php /bin/bash -c "$cmds"
+    docker-compose exec $php_container /bin/bash -c "$cmds"
 }
 
 configure-drupal() {
@@ -241,7 +242,7 @@ pull-files-drupal() {
 
     local rsync_src container_id
     rsync_src=$(echo "$src_alias" | jq -r '."remote-user" + "@" + ."remote-host"')
-    container_id=$(docker-compose ps -q php)
+    container_id=$(docker-compose ps -q $php_container)
 
     local jq src dst
     case $1 in
