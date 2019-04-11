@@ -22,7 +22,7 @@ services:
   search:
     image: guywithnose/solr:3.6.2
     volumes:
-      - "./code/example8/web/modules/contrib/search_api_solr/solr-conf/3.x:/opt/drupal/conf"
+      - "./code/example8/web/modules/contrib/search_api_solr/solr-conf/3.x:/opt/drupal/conf:ro"
     labels:
       - 'traefik.backend=search'
       - 'traefik.port=8983'
