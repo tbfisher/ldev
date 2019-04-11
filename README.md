@@ -4,7 +4,6 @@
 
 1. Install
   -   [Docker](https://www.docker.com/community-edition)
-  -   [Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
 
   The pull script requires a few common utilities. On a mac:
 
