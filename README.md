@@ -14,6 +14,10 @@
   -   [pv](http://www.ivarch.com/programs/pv.shtml)
   -   [jq](https://stedolan.github.io/jq/)
 
+  Choose your install method for:
+
+  -   [Terminus](https://github.com/pantheon-systems/terminus)
+
 2. Build -- checks out code and configures it for this local hosting environment:
 
   ```bash
