@@ -1,127 +1,22 @@
-# Example7 Docker
+# ldev - Local Web Development with Docker
 
-## Requirements
+A minimal framework for local development of web sites, using Docker Compose and Bash.
 
-- [Docker Compose](https://github.com/docker/compose)
-- [Pipe Viewer](http://www.ivarch.com/programs/pv.shtml)
-- [jq](https://stedolan.github.io/jq/)
+- Docker Compose defines a local hosting environment that can be started in a single command.
+- Bash scripts automate workflow:
+  - A build script to checkout and configure source code.
+  - A pull script automates migrating data from production and staging environments.
+  - An environment script configures the shell to interact with the hosting environment.
 
-On a mac:
+## Repository Structure
 
-```bash
-curl -O https://download.docker.com/mac/stable/Docker.dmg
-brew install pv jq
-```
+Base branches:
 
-## Setup
+- `drupal-7`, `drupal-8` -- Host-agnostic Drupal.
+- `pantheon-drupal-7`, `pantheon-drupal-8` -- [Pantheon](https://pantheon.io)-hosted Drupal.
 
-1. Build -- checks out code and configures it for this local hosting environment:
+Pick a base branch, and create a branch for your project.
 
-  ```bash
-  ./scripts/build
-  ```
+You will need to modify most files to suit your project.
 
-2. Optionally edit `.env` with your own settings.
-
-3. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
-
-  ```
-  127.0.0.1 example7.localhost search.example7.localhost mail.localhost webgrind.localhost netdata.localhost
-  ```
-
-  Note in `.env` you can configure different domain names.
-
-## Start up
-
-1. Start up docker containers:
-
-  ```bash
-  docker-compose up -d
-  ```
-
-  Note this will try to claim ports 80 and 443 on your host system. If you're already running a web server, this step will fail.
-
-2. Shell aliases to run common commands like `drush` and `mysql` inside the correct containers. Open the script to see exactly what commands it sets up.
-
-  ```bash
-  source scripts/env
-  ```
-
-3. Pull content.
-
-  The pull script [`scripts/pull`](scripts/pull) copies the database, files, and alters the site configuration to run in this local environment.
-
-  ```bash
-  # help
-  pull -h
-  # pull from test, run database updates, configure for local dev:
-  pull -cud
-  ```
-
-## Usage
-
-### URLs
-
-- [https://example7.localhost](https://example7.localhost/)
-- [http://search.example7.localhost](http://search.example7.localhost/) -- solr
-- [http://mail.localhost](http://mail.localhost/) -- mailhog
-- [http://localhost:8080](http://localhost:8080/) -- traefik
-- [http://webgrind.localhost](http://webgrind.localhost/) -- webgrind*
-- [http://netdata.localhost](http://netdata.localhost/) -- netdata*
-
-\* if enabled via `.env`
-
-### Debugging
-
-#### Xdebug
-
-[`scripts/env`](scripts/env) defines a function to enable/disable xdebug:
-
-```bash
-# enable
-xdebug en
-# disable
-xdebug dis
-```
-
-- web -- use an xdebug browser plugin, or add parameter to url
-  - debug: `XDEBUG_SESSION_START=A`
-  - profile: `XDEBUG_PROFILE=1`
-- cli
-  - Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
-  - [`scripts/env`](scripts/env) defines aliases:
-    - debug: `drush-debug`
-    - profile: `drush-profile`
-
-This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths. Look in the `docker-compose*.yml` files, the php containers declare the mappings as `volumes`.
-
-#### Profile with Webgrind
-
-To use [webgrind](https://github.com/jokkedk/webgrind) to profile php, uncomment the line in your [`.env`](env_example).
-
-```bash
-COMPOSE_FILE=docker-compose.yml:docker-compose.debug.yml
-```
-
-and run up again to rebuild containers
-
-```bash
-docker-compose up -d
-```
-
-### Logging
-
-```bash
-# all logs
-docker-compose logs
-# follow (stream log to stdout)
-docker-compose logs -f
-```
-
-### Clean up
-
-Delete containers. `-v` will also delete volumes (database, files).
-
-```bash
-docker-compose down -v
-```
+You can merge base branch changes into your project branch. You can submit PRs on base branches.
