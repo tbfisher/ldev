@@ -47,6 +47,12 @@ brew install pv jq
   source scripts/env
   ```
 
+  For example, run site-install.
+
+  ```bash
+  drush si
+  ```
+
 3. Pull content.
 
   The pull script [`scripts/pull`](scripts/pull) copies the database, files, and alters the site configuration to run in this local environment.

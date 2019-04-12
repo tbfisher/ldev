@@ -25,16 +25,29 @@ conf_path=conf/example7
 build_path=code/example7
 if [ ! -d $build_path ]; then
     echo installing drupal
-    git_origin=ssh://codeserver.dev.8c5c12cf-e8b4-4fff-8a59-34472c80dba7@codeserver.dev.8c5c12cf-e8b4-4fff-8a59-34472c80dba7.drush.in:2222/~/repository.git
-    #git_c3=
+    git_origin=https://git.drupalcode.org/project/drupal.git
+    git_branch=7.x
+    #git_mirror=
 
-    git clone "$git_origin" $build_path
+    git clone --branch "$git_branch" "$git_origin" $build_path
 
-    ## push to c3 repo when pushing to platform
-    #git -C $build_path remote add c3 "$git_c3"
+    ## push to mirror repo when pushing to platform repo
+    #git -C $build_path remote add c3 "$git_mirror"
     #git -C $build_path remote set-url origin --push "$git_origin"
-    #git -C $build_path remote set-url origin --push --add "$git_c3"
+    #git -C $build_path remote set-url origin --push --add "$git_mirror"
     #git -C $build_path fetch --all
+
+    cp $build_path/sites/default/default.settings.php $build_path/sites/default/settings.php
+    php=$(cat <<'EOS'
+
+// If there is a local settings file, then include it.
+$local_settings = __DIR__ . "/settings.local.php";
+if (file_exists($local_settings)) {
+  include $local_settings;
+}
+EOS
+)
+    echo "$php" >> $build_path/sites/default/settings.php
 fi
 echo configuring drupal
 chmod +w $build_path/sites/default
