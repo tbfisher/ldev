@@ -24,7 +24,7 @@ if [ ! -d $build_path ]; then
     git clone --branch "$git_branch" "$git_origin" $build_path
 
     ## push to mirror repo when pushing to platform repo
-    #git -C $build_path remote add c3 "$git_mirror"
+    #git -C $build_path remote add mirror "$git_mirror"
     #git -C $build_path remote set-url origin --push "$git_origin"
     #git -C $build_path remote set-url origin --push --add "$git_mirror"
     #git -C $build_path fetch --all
