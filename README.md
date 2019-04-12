@@ -12,8 +12,8 @@ A minimal framework for local development of web sites, using Docker Compose and
 
 Base branches:
 
-- `drupal-7`, `drupal-8` -- Host-agnostic Drupal.
-- `pantheon-drupal-7`, `pantheon-drupal-8` -- [Pantheon](https://pantheon.io)-hosted Drupal.
+- [`drupal-7`](tree/drupal-7), [`drupal-8`](tree/drupal-8) -- Host-agnostic Drupal.
+- [`pantheon-drupal-7`](tree/pantheon-drupal-7), [`pantheon-drupal-8`](tree/pantheon-drupal-8) -- [Pantheon](https://pantheon.io)-hosted Drupal.
 
 Pick a base branch, and create a branch for your project.
 
