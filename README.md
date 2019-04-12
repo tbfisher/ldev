@@ -1,33 +1,31 @@
 # Example8 Docker
 
+## Requirements
+
+- [Docker Compose](https://github.com/docker/compose)
+- [Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
+- [Terminus](https://github.com/pantheon-systems/terminus)
+- [Pipe Viewer](http://www.ivarch.com/programs/pv.shtml)
+- [jq](https://stedolan.github.io/jq/)
+
+On a mac:
+
+```bash
+curl -O https://download.docker.com/mac/stable/Docker.dmg
+brew install pv jq
+```
+
 ## Setup
 
-1. Install
-  -   [Docker](https://www.docker.com/community-edition)
-  -   [Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
-
-  The pull script requires a few common utilities. On a mac:
-
-  ```bash
-  brew install pv jq
-  ```
-
-  -   [pv](http://www.ivarch.com/programs/pv.shtml)
-  -   [jq](https://stedolan.github.io/jq/)
-
-  Choose your install method for:
-
-  -   [Terminus](https://github.com/pantheon-systems/terminus)
-
-2. Build -- checks out code and configures it for this local hosting environment:
+1. Build -- checks out code and configures it for this local hosting environment:
 
   ```bash
   ./scripts/build
   ```
 
-3. Optionally edit `.env` with your own settings.
+2. Optionally edit `.env` with your own settings.
 
-4. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
+3. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
 
   ```
   127.0.0.1 example8.localhost search.example8.localhost mail.localhost webgrind.localhost netdata.localhost
@@ -66,12 +64,12 @@
 
 ### URLs
 
--   [https://example8.localhost](https://example8.localhost/)
--   [http://search.example8.localhost](http://search.example8.localhost/) -- solr
--   [http://mail.localhost](http://mail.localhost/) -- mailhog
--   [http://localhost:8080](http://localhost:8080/) -- traefik
--   [http://webgrind.localhost](http://webgrind.localhost/) -- webgrind*
--   [http://netdata.localhost](http://netdata.localhost/) -- netdata*
+- [https://example8.localhost](https://example8.localhost/)
+- [http://search.example8.localhost](http://search.example8.localhost/) -- solr
+- [http://mail.localhost](http://mail.localhost/) -- mailhog
+- [http://localhost:8080](http://localhost:8080/) -- traefik
+- [http://webgrind.localhost](http://webgrind.localhost/) -- webgrind*
+- [http://netdata.localhost](http://netdata.localhost/) -- netdata*
 
 \* if enabled via `.env`
 
@@ -88,14 +86,14 @@ xdebug en
 xdebug dis
 ```
 
--   web -- use an xdebug browser plugin, or add parameter to url
-    -   debug: `XDEBUG_SESSION_START=A`
-    -   profile: `XDEBUG_PROFILE=1`
--   cli
-    -   Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
-    -   [`scripts/env`](scripts/env) defines aliases:
-        -   debug: `drush-debug`
-        -   profile: `drush-profile`
+- web -- use an xdebug browser plugin, or add parameter to url
+  - debug: `XDEBUG_SESSION_START=A`
+  - profile: `XDEBUG_PROFILE=1`
+- cli
+  - Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
+  - [`scripts/env`](scripts/env) defines aliases:
+    - debug: `drush-debug`
+    - profile: `drush-profile`
 
 This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths. Look in the `docker-compose*.yml` files, the php containers declare the mappings as `volumes`.
 
