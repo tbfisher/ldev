@@ -3,7 +3,7 @@
 ## Setup
 
 1. Install
-  -   [Docker](https://www.docker.com/community-edition)
+  - [Docker](https://www.docker.com/community-edition)
 
   The pull script requires a few common utilities. On a mac:
 
@@ -11,8 +11,8 @@
   brew install pv jq
   ```
 
-  -   [pv](http://www.ivarch.com/programs/pv.shtml)
-  -   [jq](https://stedolan.github.io/jq/)
+  - [pv](http://www.ivarch.com/programs/pv.shtml)
+  - [jq](https://stedolan.github.io/jq/)
 
 2. Build -- checks out code and configures it for this local hosting environment:
 
@@ -61,12 +61,12 @@
 
 ### URLs
 
--   [https://example7.localhost](https://example7.localhost/)
--   [http://search.example7.localhost](http://search.example7.localhost/) -- solr
--   [http://mail.localhost](http://mail.localhost/) -- mailhog
--   [http://localhost:8080](http://localhost:8080/) -- traefik
--   [http://webgrind.localhost](http://webgrind.localhost/) -- webgrind*
--   [http://netdata.localhost](http://netdata.localhost/) -- netdata*
+- [https://example7.localhost](https://example7.localhost/)
+- [http://search.example7.localhost](http://search.example7.localhost/) -- solr
+- [http://mail.localhost](http://mail.localhost/) -- mailhog
+- [http://localhost:8080](http://localhost:8080/) -- traefik
+- [http://webgrind.localhost](http://webgrind.localhost/) -- webgrind*
+- [http://netdata.localhost](http://netdata.localhost/) -- netdata*
 
 \* if enabled via `.env`
 
@@ -83,14 +83,14 @@ xdebug en
 xdebug dis
 ```
 
--   web -- use an xdebug browser plugin, or add parameter to url
-    -   debug: `XDEBUG_SESSION_START=A`
-    -   profile: `XDEBUG_PROFILE=1`
--   cli
-    -   Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
-    -   [`scripts/env`](scripts/env) defines aliases:
-        -   debug: `drush-debug`
-        -   profile: `drush-profile`
+- web -- use an xdebug browser plugin, or add parameter to url
+  - debug: `XDEBUG_SESSION_START=A`
+  - profile: `XDEBUG_PROFILE=1`
+- cli
+  - Make sure your IDE supports multiple simultaneous connections -- in PhpStorm search for setting "Max. simultaneous connections" and set to at least 2.
+  - [`scripts/env`](scripts/env) defines aliases:
+    - debug: `drush-debug`
+    - profile: `drush-profile`
 
 This is [remote debugging](https://xdebug.org/docs/remote), so you will need to configure your IDE to map server paths to local paths. Look in the `docker-compose*.yml` files, the php containers declare the mappings as `volumes`.
 
