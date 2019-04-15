@@ -4,8 +4,79 @@
 set -eu
 # exit early for errors in pipelines
 set -o pipefail
-# debugging
-# set -x
+
+# Gets the directory containing this file.
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# shellcheck source=inc/util.sh
+source "$script_dir/inc/util.sh"
+
+# current directory
+pwd_dir=$(pwd)
+# git/project root directory
+proj_dir=$(util::realpath "$script_dir/..")
+
+usage() {
+    cat << EOF
+usage: $0 [options]
+
+Build, configure code for local development.
+
+OPTIONS:
+    -c        Clean -- removes any build artifacts.
+    -v        Verbose output, prints every command to stdout.
+    -h        Prints this help message.
+EOF
+    echo
+}
+
+# parse options
+clean=
+while getopts ":cvh" OPTION
+do
+    case $OPTION in
+        c)
+            clean=yes
+            ;;
+        v)
+            set -x
+            ;;
+        h)
+            usage
+            exit
+            ;;
+        \?)
+            util::echo error "Invalid option: -$OPTARG" >&2
+            usage
+            exit 1
+            ;;
+        :)
+            util::echo error "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+cd "$proj_dir"
+
+if [[ ! -z "$clean" ]]; then
+    response=$(util::prompt "This will delete code, .env, etc. Are you sure (y|N)?")
+    case "$response" in
+        y|yes)
+            if [ -f .env ]; then
+                rm .env
+            fi
+            if [ -d code ]; then
+                util::echo alert "Attempting to delete the code directory via sudo:"
+                util::sudo rm -r code
+            fi
+            ;;
+        *)
+            util::echo info "Clean canceled."
+            ;;
+    esac
+    exit 0
+fi
 
 # Create docker-compose .env if necessary.
 if [[ ! -f .env ]]; then
@@ -16,7 +87,7 @@ fi
 conf_path=conf/example8
 build_path=code/example8
 if [ ! -d $build_path ]; then
-    echo installing drupal
+    util::echo info "installing drupal"
     git_origin=ssh://codeserver.dev.aa220cfa-f0a4-4d49-a578-5aff16add5e9@codeserver.dev.aa220cfa-f0a4-4d49-a578-5aff16add5e9.drush.in:2222/~/repository.git
     git_branch=master
     #git_mirror=
@@ -31,7 +102,7 @@ if [ ! -d $build_path ]; then
 
     composer install -d $build_path
 fi
-echo configuring drupal
+util::echo info "configuring drupal"
 chmod +w $build_path/sites/default
 rm -rf $build_path/sites/default/settings.local.php
 cp $conf_path/sites/default/settings.local.php $build_path/sites/default/
@@ -44,3 +115,5 @@ rm -rf $build_path/sites/default/files
 ln -sf /var/www_files/public $build_path/sites/default/files
 #ln -sf /var/www_files/private $build_path/sites/default/private
 chmod -w $build_path/sites/default
+
+cd "$pwd_dir"
