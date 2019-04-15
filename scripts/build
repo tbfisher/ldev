@@ -70,6 +70,10 @@ if [[ ! -z "$clean" ]]; then
                 util::echo alert "Attempting to delete the code directory via sudo:"
                 util::sudo rm -r code
             fi
+            if [ -d data ]; then
+                util::echo alert "Attempting to delete the data directory via sudo:"
+                util::sudo rm -r code
+            fi
             ;;
         *)
             util::echo info "Clean canceled."
