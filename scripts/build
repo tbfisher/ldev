@@ -14,7 +14,7 @@ fi
 
 # drush
 if [ ! -d code/drush ]; then
-    echo installing drush
+    util::echo info "installing drush"
     git clone --depth 1 --branch 8.2.1 git@github.com:drush-ops/drush.git code/drush
     composer --working-dir=code/drush install -o --no-dev
     ./code/drush/drush dl --destination=code/drush/commands registry_rebuild-7.x composer-8.x
@@ -24,7 +24,7 @@ fi
 conf_path=conf/example7
 build_path=code/example7
 if [ ! -d $build_path ]; then
-    echo installing drupal
+    util::echo info "installing drupal"
     git_origin=https://git.drupalcode.org/project/drupal.git
     git_branch=7.x
     #git_mirror=
@@ -49,7 +49,7 @@ EOS
 )
     echo "$php" >> $build_path/sites/default/settings.php
 fi
-echo configuring drupal
+util::echo info "configuring drupal"
 chmod +w $build_path/sites/default
 rm -rf $build_path/sites/default/settings.local.php
 cp $conf_path/sites/default/settings.local.php $build_path/sites/default/

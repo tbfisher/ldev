@@ -126,7 +126,7 @@ clean() {
     response=$(util::prompt "Are you sure (y|N)?")
     case "$response" in
         y|yes)
-            echo Trying to run chown via sudo to delete the code directory. You may be prompted for your password.
+            util::echo alert "Trying to run chown via sudo to delete the code directory. You may be prompted for your password."
             sudo chown -R "$USER" code
             chmod -R u+w code/*
             rm -rf \
@@ -134,7 +134,7 @@ clean() {
                 code
             ;;
         *)
-            echo Clean canceled.
+            util::echo info "Clean canceled."
             ;;
     esac
 }
@@ -187,14 +187,14 @@ EOF
 EOF
 )
     fi
-    echo setting xdebug config to:
-    echo ------
+    util::echo info "setting xdebug config on container $container to:"
+    util::echo info "------"
     echo "$ini_contents"
-    echo ------
+    util::echo info "------"
     docker-compose exec "$container" /bin/bash -c "echo '$ini_contents' > '$ini_path'"
     # restart php-fpm
-    echo restarting php-fpm...
+    util::echo info "restarting php-fpm..."
     docker-compose exec "$container" /bin/bash -c 'kill -USR2 1'
-    echo done.
+    util::echo info "done."
     cd "$pwd_dir" || return
 }
