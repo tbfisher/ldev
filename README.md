@@ -17,6 +17,6 @@ Base branches:
 
 Pick a base branch, and create a branch for your project.
 
-You will need to modify most files to suit your project.
+You will need to make minor modifications to most files to suit your project.
 
 You can merge base branch changes into your project branch. You can submit PRs on base branches.
