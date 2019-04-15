@@ -120,25 +120,6 @@ pull() {
     $pull_script "$@"
 }
 
-# clean build artifacts
-clean() {
-    local response
-    response=$(util::prompt "Are you sure (y|N)?")
-    case "$response" in
-        y|yes)
-            util::echo alert "Attempting to delete the code directory via sudo:"
-            util::sudo chown -R "$USER" code
-            chmod -R u+w code/*
-            rm -rf \
-                .env \
-                code
-            ;;
-        *)
-            util::echo info "Clean canceled."
-            ;;
-    esac
-}
-
 # enable/disable xdebug in a php-fpm container
 xdebug() {
     cd "$proj_dir" || return 1
