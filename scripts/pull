@@ -112,12 +112,12 @@ do
             exit
             ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
+            util::echo error "Invalid option: -$OPTARG" >&2
             usage
             exit 1
             ;;
         :)
-            echo "Option -$OPTARG requires an argument." >&2
+            util::echo error "Option -$OPTARG requires an argument." >&2
             exit 1
             ;;
     esac
@@ -135,7 +135,7 @@ src=pantheon.$pantheon_project.$src_env
 
 # environment
 if [[ -f $proj_dir/code ]]; then
-    echo "no code found at $proj_dir/code, did you run ./scripts/build?"
+    util::echo error "no code found at $proj_dir/code, did you run ./scripts/build?"
     exit 1
 fi
 
@@ -148,16 +148,16 @@ list() {
 
     local src_envs
     src_envs=$(drush-local sa | grep "pantheon.$pantheon_project" | sed "s/@pantheon\.${pantheon_project}\.//g")
-    echo src-alias values:
+    util::echo info "src-alias values:"
     echo "$src_envs"
     echo
 
     # ls will non-zero exit if pattern doesn't match
     set +e
-    echo 'source dumps (on local):'
+    util::echo info 'source dumps (on local):'
     ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_${src_env}_"*.sql.gz
     echo
-    echo 'local backups:'
+    util::echo info 'local backups:'
     ls -lh "$backup_dir/$backup_prefix.local."*.sql.gz
     echo
     set -e
@@ -169,7 +169,7 @@ backup-drupal() {
     dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.local.*.sql.gz")
     drush sql-dump --structure-tables-list=cache,cache*,watchdog | \
         gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
-    echo "wrote to $dumpfile"
+    util::echo info "wrote to $dumpfile"
 }
 
 pull-drupal() {
@@ -178,11 +178,11 @@ pull-drupal() {
 
     # generate backup
     if [[ ! -z "$drupal_pull_create" ]]; then
-        echo "generating backup of $src_env environment..."
+        util::echo info "generating backup of $src_env environment..."
         echo
         terminus -n --element=database backup:create \
             "$pantheon_project.$src_env"
-        echo figuring backup filename...
+        util::echo info "figuring backup filename..."
         echo
         local backups
         backups=$(terminus --element=database --format=json backup:list \
@@ -190,7 +190,7 @@ pull-drupal() {
         file=$(echo "$backups" | \
             jq -r 'map( { file, date } ) | sort_by(.date) | last | .file')
         dumpfile="$backup_dir/$backup_prefix.$file"
-        echo "downloading backup to $dumpfile ..."
+        util::echo info "downloading backup to $dumpfile ..."
         echo
         terminus backup:get --file="$file" --to="$dumpfile" \
             "$pantheon_project.$src_env"
@@ -200,14 +200,15 @@ pull-drupal() {
         if [[ -f "$1" ]]; then
             dumpfile="$1"
         else
-            echo "WARNING: $1 not found."
+            util::echo error "$1 not found."
             echo
+            exit 1
         fi
     fi
 
     # choose remote
     while [[ -z "$dumpfile" ]]; do
-        echo listing source backups...
+        util::echo info listing source backups...
         echo
         terminus --element=database backup:list "$pantheon_project.$src_env"
         file=$(util::prompt "Choose backup file, or [enter] to refresh")
@@ -216,18 +217,18 @@ pull-drupal() {
                 ;;
             *)
                 dumpfile="$backup_dir/$backup_prefix.$file"
-                echo "downloading $file to $dumpfile ..."
+                util::echo info "downloading $file to $dumpfile ..."
                 echo
                 terminus backup:get --file="$file" --to="$dumpfile" "$pantheon_project.$src_env"
                 ;;
         esac
     done
 
-    echo wiping destination database...
+    util::echo info "wiping destination database..."
     echo
     drush -yq sql-drop
 
-    echo importing...
+    util::echo info "importing..."
     echo
     pv "$dumpfile" | gunzip -c | mysql-pipe
 }
@@ -309,8 +310,8 @@ pull-files-drupal() {
     case $1 in
         public)
             dst=$(docker inspect "$container_id" | jq -r "$jq")
-            echo Trying to run rsync via sudo to write to container volume. You may be prompted for your password.
-            sudo rsync -e "ssh -p 2222 -i $ssh_id" \
+            util::echo alert "Attempting rsync to container volume via sudo:"
+            util::sudo rsync -e "ssh -p 2222 -i $ssh_id" \
                 -rLvz --size-only --ipv4 --progress --delete \
                 --exclude=/private \
                 --exclude=/css \
@@ -322,8 +323,8 @@ pull-files-drupal() {
             ;;
         private)
             dst=$(docker inspect "$container_id" | jq -r "$jq")
-            echo Trying to run rsync via sudo to write to container volume. You may be prompted for your password.
-            sudo rsync -e "ssh -p 2222 -i $ssh_id" \
+            util::echo alert "Attempting rsync to container volume via sudo:"
+            util::sudo rsync -e "ssh -p 2222 -i $ssh_id" \
                 -rLvz --size-only --ipv4 --progress \
                 "${src}/private/" \
                 "$dst/private"
@@ -345,40 +346,40 @@ if [[ ! -z "$list" ]]; then
     exit 0
 fi
 
-echo source alias:
+util::echo info "source alias:"
 echo "$src_alias" | jq
 echo
 
 if [[ ! -z "$drupal_backup" ]]; then
-    echo backing up local drupal database
+    util::echo info "backing up local drupal database"
     echo
     backup-drupal
     echo
 fi
 
 if [[ ! -z "$drupal_pull" ]]; then
-    echo pulling drupal database
+    util::echo info "pulling drupal database"
     echo
     pull-drupal "$drupal_pull_dumpfile"
     echo
 fi
 
 if [[ ! -z $drupal_config ]]; then
-    echo drupal configure
+    util::echo info "drupal configure"
     echo
     configure-drupal "$drupal_config_update"
     echo
 fi
 
 if [[ ! -z $drupal_pull_files ]]; then
-    echo drupal files
+    util::echo info "drupal files"
     echo
     pull-files-drupal public
     echo
 fi
 
 if [[ ! -z $drupal_pull_private ]]; then
-    echo drupal private files
+    util::echo info "drupal private files"
     echo
     pull-files-drupal private
     echo

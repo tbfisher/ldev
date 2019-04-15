@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+# Colors.
+util::echo() {
+    case "$1" in
+        # Alert: action must be taken immediately.
+        alert*)     echo "$(tput setaf 1)${2}$(tput sgr0)";;
+        # Critical conditions.
+        critical*)  echo "$(tput setaf 2)${2}$(tput sgr0)";;
+        # Error conditions.
+        error*)     echo "$(tput setaf 3)${2}$(tput sgr0)";;
+        # Warning conditions.
+        warning*)   echo "$(tput setaf 4)${2}$(tput sgr0)";;
+        # Normal but significant conditions.
+        notice*)    echo "$(tput setaf 5)${2}$(tput sgr0)";;
+        # Informational messages.
+        info*)      echo "$(tput setaf 6)${2}$(tput sgr0)";;
+        # Debug-level messages.
+        debug*)     echo "$(tput setaf 7)${2}$(tput sgr0)";;
+    esac
+}
+
 # No realpath on mac.
 util::realpath() {
     unameOut="$(uname -s)"
@@ -25,6 +45,13 @@ util::filesize() {
 
 # Print argument to stdout and read response.
 util::prompt() {
-    read -rp "$1"": " val
+    read -rp "$(util::echo alert "$1: ")" val
     echo "$val"
+}
+
+# Run command via sudo, writing command to screen for transparency.
+util::sudo() {
+    echo "$*"
+    echo
+    sudo "$@"
 }
