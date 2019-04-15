@@ -251,8 +251,8 @@ pull-files-drupal() {
                 jq -r '."%paths"."%root" + "/" + ."%paths"."%files"')"
             jq='.[0].Mounts[] | select(.Destination == "/var/www_files/public") | .Source'
             dst=$(docker inspect "$container_id" | jq -r "$jq")
-            util::echo alert "Trying to run rsync via sudo to write to container volume. You may be prompted for your password."
-            sudo rsync -e "ssh -i $ssh_id" \
+            util::echo alert "Attempting rsync to container volume via sudo:"
+            util::sudo rsync -e "ssh -i $ssh_id" \
                 -rLvz --size-only --ipv4 --progress --delete \
                 --exclude=/css \
                 --exclude=/js \
@@ -265,8 +265,8 @@ pull-files-drupal() {
             src="$rsync_src:$(echo "$status" | jq -r '."%paths"."%private"')"
             jq='.[0].Mounts[] | select(.Destination == "/var/www_files/private") | .Source'
             dst=$(docker inspect "$container_id" | jq -r "$jq")
-            util::echo alert "Trying to run rsync via sudo to write to container volume. You may be prompted for your password."
-            sudo rsync -e "ssh -i $ssh_id" \
+            util::echo alert "Attempting rsync to container volume via sudo:"
+            util::sudo rsync -e "ssh -i $ssh_id" \
                 -rLvz --size-only --ipv4 --progress --delete \
                 --exclude=/backup_migrate \
                 "$src/" \

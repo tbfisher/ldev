@@ -48,3 +48,10 @@ util::prompt() {
     read -rp "$(util::echo alert "$1: ")" val
     echo "$val"
 }
+
+# Run command via sudo, writing command to screen for transparency.
+util::sudo() {
+    echo "$*"
+    echo
+    sudo "$@"
+}

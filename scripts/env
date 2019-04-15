@@ -126,8 +126,8 @@ clean() {
     response=$(util::prompt "Are you sure (y|N)?")
     case "$response" in
         y|yes)
-            util::echo alert "Trying to run chown via sudo to delete the code directory. You may be prompted for your password."
-            sudo chown -R "$USER" code
+            util::echo alert "Attempting to delete the code directory via sudo:"
+            util::sudo chown -R "$USER" code
             chmod -R u+w code/*
             rm -rf \
                 .env \
