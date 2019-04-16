@@ -1,12 +1,29 @@
-# ldev - Local Web Development with Docker
+# Local Web Development with Docker
 
-A minimal framework for local development of web sites, using Docker Compose and Bash.
+A minimal framework for local development of web sites, using [Docker Compose](https://docs.docker.com/compose/).
 
-- Docker Compose defines a local hosting environment that can be started in a single command.
+- Defines a local hosting environment using Docker Compose that can be started in a single command.
 - Bash scripts automate workflow:
-  - A build script to checkout and configure source code.
+  - A build script checks out and configures source code.
   - A pull script automates migrating data from production and staging environments.
   - An environment script configures the shell to interact with the hosting environment.
+
+Features:
+
+- Aliases to commands running inside containers, e.g. `mysql` instead of `docker-compose exec db mysql --user="$user" --password="$pass" "$db"`.
+- [Xdebug](http://www.xdebug.org/) -- PHP debugging, with a command to toggle on/off.
+- [Webgrind](https://github.com/jokkedk/webgrind) -- visualize Xdebug profiles.
+- [Mailhog](https://github.com/mailhog/MailHog) -- capture outgoing mail.
+- [traefik](https://traefik.io) -- reverse proxy and ssl termination.
+
+Similar projects:
+
+- [DDEV](https://www.drud.com)
+- [Docksal](https://docksal.io)
+- [Drupal VM](https://www.drupalvm.com)
+- [Expresso PHP](https://github.com/expresso-php/expresso-php)
+- [Lando](https://github.com/lando/lando)
+- [docker4drupal](https://github.com/Wodby/docker4drupal)
 
 ## Repository Structure
 
