@@ -31,6 +31,7 @@ mysql_container=db
 mysql_user=root
 mysql_pass=$DATABASE_PASSWORD
 mysql_db=$DATABASE_NAME
+build_script="$script_dir/build"
 pull_script="$script_dir/pull"
 
 # drush as webserver user
@@ -115,7 +116,12 @@ mysqldump() {
     )
 }
 
-# pull scripts
+# build script
+build() {
+    $build_script "$@"
+}
+
+# pull script
 pull() {
     $pull_script "$@"
 }
