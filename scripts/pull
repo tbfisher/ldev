@@ -27,8 +27,8 @@ export LINES=32
 source "$script_dir/env"
 
 default_env=dev
-drush_alias_prefix=ldevexample7
-drupal_root="$proj_dir/code/example7/docroot"
+drush_alias_prefix=ldevexample8
+drupal_root="$proj_dir/code/example8/docroot"
 drupal_multisite_id=default
 drupal_stage_file_proxy_origin=
 php_container=php
@@ -187,6 +187,10 @@ fix-volume-perms() {
     cmds+="mkdir -p /var/www_files/{public,private}/$drupal_multisite_id;"
     cmds+='chgrp -R www-data /var/www_files/public /var/www_files/private;'
     cmds+='chmod -R g+w /var/www_files/public /var/www_files/private;'
+    # ensure config dirs writable by webserver.
+    #cmds+='mkdir -p /var/www/config-local;'
+    #cmds+='chgrp -R www-data /var/www/config /var/www/config-local;'
+    #cmds+='chmod -R g+w /var/www/config /var/www/config-local;'
     docker-compose exec $php_container /bin/bash -c "$cmds"
 }
 
@@ -196,26 +200,22 @@ configure-drupal() {
 
     fix-volume-perms
 
-    # download/update dev modules
-    # don't fail when offline
-    set +e
-    drush-local -y dl --destination="$drupal_root/sites/all/modules/local" \
-        devel-7.x               \
-        log_stdout-7.x          \
-        stage_file_proxy-7.x
-    drush -y en log_stdout
-    set -e
+    #drush -y en \
+    #    log_stdout
 
-    # drush cc drush
-    drush rr
+    drush cr
 
     if [[ ! -z "$update" ]]; then
         drush -y updb
     fi
 
-    drush -y en \
-        devel \
-        stage_file_proxy
+    #drush -y en \
+    #    devel \
+    #    stage_file_proxy
+
+    #set +e
+    #drush -y csim local
+    #set -e
 
     # stage_file_proxy
     if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
@@ -223,9 +223,9 @@ configure-drupal() {
         origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
         # uri from alias
         #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
-        drush -y vset stage_file_proxy_origin "$origin"
+        drush -y cset stage_file_proxy.settings origin "$origin"
     else
-        drush -y vset stage_file_proxy_origin "$drupal_stage_file_proxy_origin"
+        drush -y cset stage_file_proxy.settings origin "$drupal_stage_file_proxy_origin"
     fi
 
     drush user-unblock 1

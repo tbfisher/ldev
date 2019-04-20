@@ -20,7 +20,7 @@ services:
   #search:
   #  image: guywithnose/solr:3.6.2
   #  volumes:
-  #    - "./code/example7/docroot/sites/all/modules/contrib/search_api_solr/solr-conf/3.x:/opt/solr/example/solr/collection1/conf:ro"
+  #    - "./code/example8/docroot/sites/all/modules/contrib/search_api_solr/solr-conf/3.x:/opt/solr/example/solr/collection1/conf:ro"
   #  labels:
   #    - 'traefik.backend=search'
   #    - 'traefik.port=8983'
@@ -40,7 +40,7 @@ services:
       PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
       ENVIRONMENT: ${ENVIRONMENT}
     volumes:
-      - "./code/example7/docroot:/var/www/web:cached"
+      - "./code/example8/docroot:/var/www/web:cached"
       - "./code/drush:/var/www/drush:cached"
       - "files_public:/var/www_files/public:rw"
       - "files_private:/var/www_files/private:rw"
@@ -56,7 +56,7 @@ services:
       - 'traefik.frontend.rule=Host:${PRIMARY_DOMAIN}.${BASE_DOMAIN},www.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http,https'
     volumes:
-      - "./code/example7/docroot:/var/www/web:cached"
+      - "./code/example8/docroot:/var/www/web:cached"
       - "files_public:/var/www_files/public:rw"
       - "files_private:/var/www_files/private:rw"
 

@@ -96,11 +96,11 @@ if [ ! -d code/drush ]; then
 fi
 
 # drupal
-conf_path=conf/example7
-build_path=code/example7
+conf_path=conf/example8
+build_path=code/example8
 if [ ! -d $build_path ]; then
     util::echo info "installing drupal"
-    git_origin=ldevexample7@svn-6061.devcloud.hosting.acquia.com:ldevexample7.git
+    git_origin=ldevexample8@svn-6061.devcloud.hosting.acquia.com:ldevexample8.git
     git_branch=master
     #git_mirror=
 
@@ -112,7 +112,8 @@ if [ ! -d $build_path ]; then
     #git -C $build_path remote set-url origin --push --add "$git_mirror"
     #git -C $build_path fetch --all
 
-    cp $build_path/docroot/sites/default/default.settings.php $build_path/docroot/sites/default/settings.php
+    #composer install -d $build_path
+
     php=$(cat <<'EOS'
 
 // If there is a local settings file, then include it.

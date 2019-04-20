@@ -3,6 +3,7 @@
 ## Requirements
 
 - [Docker Compose](https://github.com/docker/compose)
+- [Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
 - [Pipe Viewer](http://www.ivarch.com/programs/pv.shtml)
 - [jq](https://stedolan.github.io/jq/)
 
@@ -26,7 +27,7 @@ brew install pv jq
 3. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
 
   ```
-  127.0.0.1 example7.localhost search.example7.localhost mail.localhost webgrind.localhost netdata.localhost
+  127.0.0.1 example8.localhost search.example8.localhost mail.localhost webgrind.localhost netdata.localhost
   ```
 
   Note in `.env` you can configure different domain names.
@@ -47,12 +48,6 @@ brew install pv jq
   source scripts/env
   ```
 
-  For example, run site-install.
-
-  ```bash
-  drush si
-  ```
-
 3. Pull content.
 
   The pull script [`scripts/pull`](scripts/pull) copies the database, files, and alters the site configuration to run in this local environment.
@@ -68,8 +63,8 @@ brew install pv jq
 
 ### URLs
 
-- [https://example7.localhost](https://example7.localhost/)
-- [http://search.example7.localhost](http://search.example7.localhost/) -- solr
+- [https://example8.localhost](https://example8.localhost/)
+- [http://search.example8.localhost](http://search.example8.localhost/) -- solr
 - [http://mail.localhost](http://mail.localhost/) -- mailhog
 - [http://localhost:8080](http://localhost:8080/) -- traefik
 - [http://webgrind.localhost](http://webgrind.localhost/) -- webgrind*
