@@ -196,6 +196,9 @@ configure-drupal() {
 
     fix-volume-perms
 
+    # drush cc drush
+    drush rr
+
     # download/update dev modules
     # don't fail when offline
     set +e
@@ -205,9 +208,6 @@ configure-drupal() {
         stage_file_proxy-7.x
     drush -y en log_stdout
     set -e
-
-    # drush cc drush
-    drush rr
 
     if [[ ! -z "$update" ]]; then
         drush -y updb
