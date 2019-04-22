@@ -200,10 +200,10 @@ configure-drupal() {
 
     fix-volume-perms
 
+    drush cr
+
     #drush -y en \
     #    log_stdout
-
-    drush cr
 
     if [[ ! -z "$update" ]]; then
         drush -y updb
