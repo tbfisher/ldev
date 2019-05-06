@@ -88,12 +88,12 @@ if [[ ! -f .env ]]; then
 fi
 
 # drupal
-conf_path=conf/example7
-build_path=code/example7
+conf_path=conf/example8
+build_path=code/example8
 if [ ! -d $build_path ]; then
     util::echo info "installing drupal"
     mkdir -p code
-    platform get f3iftywfjiuku $build_path
+    platform get wfkshdumslopk $build_path
 
     cd $build_path
     platform build
@@ -110,14 +110,14 @@ if [ ! -d $build_path ]; then
 
 fi
 util::echo info "configuring drupal"
-chmod +w $build_path/docroot/sites/default
-rm -rf $build_path/docroot/sites/default/settings.local.php
-cp $conf_path/docroot/sites/default/settings.local.php $build_path/docroot/sites/default/
+chmod +w $build_path/web/sites/default
+rm -rf $build_path/web/sites/default/settings.local.php
+cp $conf_path/web/sites/default/settings.local.php $build_path/web/sites/default/
 # map files directories to volumes so they survive container destruction.
 # @see docker-compose.yml
-rm -rf $build_path/docroot/sites/default/files
-ln -sf /var/www_files/public $build_path/docroot/sites/default/files
-# ln -sf /var/www_files/private $build_path/docroot/sites/default/private
-chmod -w $build_path/docroot/sites/default
+rm -rf $build_path/web/sites/default/files
+ln -sf /var/www_files/public $build_path/web/sites/default/files
+# ln -sf /var/www_files/private $build_path/web/sites/default/private
+chmod -w $build_path/web/sites/default
 
 cd "$pwd_dir"
