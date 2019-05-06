@@ -24,8 +24,8 @@ source "$proj_dir/.env"
 
 php_container=php
 php_ide_config="serverName=$PRIMARY_DOMAIN.$BASE_DOMAIN"
-drush_container=/var/www/drush/drush
-drush_local=$proj_dir/code/drush/drush
+drush_container=/var/www/.platform/local/deps/php/vendor/bin/drush
+drush_local=$proj_dir/code/example7/.platform/local/deps/php/vendor/bin/drush
 drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
 mysql_container=db
 mysql_user=root

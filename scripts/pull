@@ -26,9 +26,9 @@ export LINES=32
 # shellcheck source=env
 source "$script_dir/env"
 
-default_env=dev
+default_env=master
 drush_alias_prefix=example7
-drupal_root="$proj_dir/code/example7"
+drupal_root="$proj_dir/code/example7/docroot"
 drupal_multisite_id=default
 drupal_stage_file_proxy_origin=
 php_container=php

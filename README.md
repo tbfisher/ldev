@@ -3,6 +3,7 @@
 ## Requirements
 
 - [Docker Compose](https://github.com/docker/compose)
+- [platformsh-cli](https://github.com/platformsh/platformsh-cli)
 - [Pipe Viewer](http://www.ivarch.com/programs/pv.shtml)
 - [jq](https://stedolan.github.io/jq/)
 
@@ -10,6 +11,7 @@ On a mac:
 
 ```bash
 curl -O https://download.docker.com/mac/stable/Docker.dmg
+curl -sS https://platform.sh/cli/installer | php
 brew install pv jq
 ```
 
@@ -45,12 +47,6 @@ brew install pv jq
 
   ```bash
   source scripts/env
-  ```
-
-  For example, run site-install.
-
-  ```bash
-  drush si
   ```
 
 3. Pull content.

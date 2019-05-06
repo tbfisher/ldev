@@ -14,23 +14,23 @@ services:
     volumes:
       - "db_data:/var/lib/mysql"
 
-  cache:
-    build: ./images/redis-3
-    sysctls:
-      net.core.somaxconn: 65535
+  #cache:
+  #  build: ./images/redis-3
+  #  sysctls:
+  #    net.core.somaxconn: 65535
 
-  search:
-    image: guywithnose/solr:3.6.2
-    volumes:
-      - "./code/example7/sites/all/modules/contrib/search_api_solr/solr-conf/3.x:/opt/solr/example/solr/collection1/conf:ro"
-    labels:
-      - 'traefik.backend=search'
-      - 'traefik.port=8983'
-      - 'traefik.frontend.rule=Host:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http'
+  #search:
+  #  image: guywithnose/solr:3.6.2
+  #  volumes:
+  #    - "./code/example7/sites/all/modules/contrib/search_api_solr/solr-conf/3.x:/opt/solr/example/solr/collection1/conf:ro"
+  #  labels:
+  #    - 'traefik.backend=search'
+  #    - 'traefik.port=8983'
+  #    - 'traefik.frontend.rule=Host:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+  #    - 'traefik.frontend.entryPoints=http'
 
   php:
-    image: tbfisher/drupal-php:7.2-dev-3
+    build: ./images/platformsh-php71
     environment:
       DB_HOST: db
       DB_USER: ${DATABASE_USER}
@@ -42,15 +42,14 @@ services:
       PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
       ENVIRONMENT: ${ENVIRONMENT}
     volumes:
-      - "./code/example7:/var/www/web:cached"
-      - "./code/drush:/var/www/drush:cached"
+      - "./code/example7:/var/www:cached"
       - "files_public:/var/www_files/public:rw"
       - "files_private:/var/www_files/private:rw"
 
   web:
     image: tbfisher/drupal-web:nginx-1.8-dev-1
     environment:
-      WEB_DOCROOT: /var/www/web
+      WEB_DOCROOT: /var/www/docroot
       WEB_PHPFPM: "php:9000"
     labels:
       - 'traefik.backend=web'
@@ -58,7 +57,7 @@ services:
       - 'traefik.frontend.rule=Host:${PRIMARY_DOMAIN}.${BASE_DOMAIN},www.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http,https'
     volumes:
-      - "./code/example7:/var/www/web:cached"
+      - "./code/example7:/var/www:cached"
       - "files_public:/var/www_files/public:rw"
       - "files_private:/var/www_files/private:rw"
 
