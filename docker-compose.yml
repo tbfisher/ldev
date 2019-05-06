@@ -30,7 +30,7 @@ services:
       - 'traefik.frontend.entryPoints=http'
 
   php:
-    image: tbfisher/drupal-php:7.2-dev-2
+    image: tbfisher/drupal-php:7.2-dev-3
     environment:
       DB_HOST: db
       DB_USER: ${DATABASE_USER}
