@@ -110,14 +110,14 @@ if [ ! -d $build_path ]; then
 
 fi
 util::echo info "configuring drupal"
-chmod +w $build_path/docroot/sites/default
-rm -rf $build_path/docroot/sites/default/settings.local.php
-cp $conf_path/docroot/sites/default/settings.local.php $build_path/docroot/sites/default/
+chmod +w $build_path/_www/sites/default
+rm -rf $build_path/_www/sites/default/settings.local.php
+cp $conf_path/_www/sites/default/settings.local.php $build_path/_www/sites/default/
 # map files directories to volumes so they survive container destruction.
 # @see docker-compose.yml
-rm -rf $build_path/docroot/sites/default/files
-ln -sf /var/www_files/public $build_path/docroot/sites/default/files
-# ln -sf /var/www_files/private $build_path/docroot/sites/default/private
-chmod -w $build_path/docroot/sites/default
+rm -rf $build_path/_www/sites/default/files
+ln -sf /var/www_files/public $build_path/_www/sites/default/files
+# ln -sf /var/www_files/private $build_path/_www/sites/default/private
+chmod -w $build_path/_www/sites/default
 
 cd "$pwd_dir"
