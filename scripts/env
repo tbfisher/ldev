@@ -27,7 +27,7 @@ php_ide_config="serverName=$PRIMARY_DOMAIN.$BASE_DOMAIN"
 drush_container=/var/www/web/vendor/bin/drush
 drush_local=$proj_dir/code/example8/vendor/bin/drush
 drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
-drupal_console_container=/var/www/web/vendor/bin/drupal
+drupal_console_container=../vendor/bin/drupal
 mysql_container=db
 mysql_user=root
 mysql_pass=$DATABASE_PASSWORD
