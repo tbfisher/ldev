@@ -37,6 +37,7 @@ services:
       DB_PASSWORD: ${DATABASE_PASSWORD}
       DB_NAME: ${DATABASE_NAME}
       DB_DRIVER: mysql
+      CACHE_HOST: phpcache
       BASE_DOMAIN: ${BASE_DOMAIN}
       PRIMARY_DOMAIN: ${PRIMARY_DOMAIN}
       PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"

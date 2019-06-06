@@ -44,7 +44,7 @@ $settings['file_private_path'] = '/var/www_files/private';
 // Redis.
 //$settings['container_yamls'][] = 'modules/contrib/redis/example.services.yml';
 //$settings['redis.connection']['interface'] = 'PhpRedis';
-//$settings['redis.connection']['host'] = 'cache';
+//$settings['redis.connection']['host'] = $_SERVER['CACHE_HOST'];
 //$settings['redis.connection']['port'] = '6379';
 //$settings['redis.connection']['password'] = '';
 //$settings['cache']['default'] = 'cache.backend.redis';
