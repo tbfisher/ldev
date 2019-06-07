@@ -51,7 +51,7 @@ brew install pv jq
   For example, run site-install.
 
   ```bash
-  drush-root si --db-url=mysql://drupal:drupal@db/drupal
+  drush-root si -y --db-url=mysql://drupal:drupal@db/drupal --config-dir=../config
   ```
 
 3. Pull content.

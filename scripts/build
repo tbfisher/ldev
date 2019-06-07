@@ -119,6 +119,7 @@ util::echo info "configuring drupal"
 chmod +w $build_path/web/sites/default
 rm -rf $build_path/web/sites/default/settings.local.php
 cp $conf_path/web/sites/default/settings.local.php $build_path/web/sites/default/
+mkdir -p $build_path/config
 # config_split
 rm -rf $build_path/config-local
 cp -r $conf_path/config-local $build_path/config-local
