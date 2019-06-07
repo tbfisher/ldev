@@ -64,6 +64,8 @@ import std;
 #  .threshold = 6;
 #}
 
+# health check, e.g. https://github.com/wunderio/drupal-ping, https://www.drupal.org/project/health_check_url
+# make sure to uncomment probe below in backend
 #probe default_probe {
 #  .url = "/_ping.php";
 #  .interval = 5s;
@@ -82,6 +84,7 @@ backend default {
   .connect_timeout = 60s;
   .first_byte_timeout = 300s;
   .between_bytes_timeout = 60s;
+  # make sure to uncomment probe above
   #.probe = default_probe;
 }
 
