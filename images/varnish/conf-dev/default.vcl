@@ -64,14 +64,6 @@ import std;
 #  .threshold = 6;
 #}
 
-#probe default_probe {
-#  .url = "/_ping.php";
-#  .interval = 5s;
-#  .timeout = 1s;
-#  .window = 5;
-#  .threshold = 3;
-#}
-
 /* Backend definitions.*/
 # See https://varnish-cache.org/docs/4.1/reference/vcl.html#backend-definition
 backend default {
@@ -82,7 +74,6 @@ backend default {
   .connect_timeout = 60s;
   .first_byte_timeout = 300s;
   .between_bytes_timeout = 60s;
-  #.probe = default_probe;
 }
 
 /* Access Control Lists */
