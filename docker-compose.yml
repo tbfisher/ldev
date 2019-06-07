@@ -1,31 +1,22 @@
+# Main file, shared between all environments.
+
 version: "3"
 
 services:
 
   db:
-    build: ./images/acquia-mysql
+    build: ./images/drupal-mariadb
     environment:
       MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
       MYSQL_DATABASE: ${DATABASE_NAME}
       MYSQL_USER: ${DATABASE_USER}
       MYSQL_PASSWORD: ${DATABASE_PASSWORD}
-    ports:
-      - '3306'
-    volumes:
-      - "db_data:/var/lib/mysql"
 
-  #cache:
+  #phpcache:
   #  image: sylvainlasnier/memcached
 
   #search:
   #  image: guywithnose/solr:3.6.2
-  #  volumes:
-  #    - "./code/example7/docroot/sites/all/modules/contrib/search_api_solr/solr-conf/3.x:/opt/solr/example/solr/collection1/conf:ro"
-  #  labels:
-  #    - 'traefik.backend=search'
-  #    - 'traefik.port=8983'
-  #    - 'traefik.frontend.rule=Host:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
-  #    - 'traefik.frontend.entryPoints=http'
 
   php:
     image: tbfisher/drupal-php:7.2-dev-5
@@ -35,56 +26,19 @@ services:
       DB_PASSWORD: ${DATABASE_PASSWORD}
       DB_NAME: ${DATABASE_NAME}
       DB_DRIVER: mysql
+      CACHE_HOST: phpcache
+      SEARCH_HOST: search
       BASE_DOMAIN: ${BASE_DOMAIN}
       PRIMARY_DOMAIN: ${PRIMARY_DOMAIN}
       PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
       ENVIRONMENT: ${ENVIRONMENT}
-    volumes:
-      - "./code/example7/docroot:/var/www/web:cached"
-      - "./code/drush:/var/www/drush:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
 
   web:
     image: tbfisher/drupal-web:httpd-2.4
     environment:
       WEB_DOCROOT: /var/www/web
       WEB_PHPFPM: "php:9000"
-    labels:
-      - 'traefik.backend=web'
-      - 'traefik.port=80'
-      - 'traefik.frontend.rule=Host:${PRIMARY_DOMAIN}.${BASE_DOMAIN},www.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http,https'
-    volumes:
-      - "./code/example7/docroot:/var/www/web:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
 
-  # common
-
-  mail:
-    image: mailhog/mailhog
-    labels:
-      - 'traefik.backend=mail'
-      - 'traefik.port=8025'
-      - 'traefik.frontend.rule=Host:mail.${BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http'
-
-  traefik:
-    image: traefik
-    command: -c /dev/null --web --docker --docker.domain=docker.localhost --logLevel=INFO --entryPoints="Name:https Address::443 TLS:/certs/ssl-cert-snakeoil.crt,/certs/ssl-cert-snakeoil.key" --entryPoints="Name:http Address::80"
-    ports:
-      - '8080:8080'
-      - '80:80'
-      - '443:443'
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - ./conf/traefik/certs:/certs
-
-volumes:
-  db_data:
-    driver: local
-  files_public:
-    driver: local
-  files_private:
-    driver: local
+  webproxy:
+    build:
+      context: ./images/varnish

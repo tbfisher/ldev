@@ -1,0 +1,45 @@
+# Development proxy for routing, SSL term.
+
+version: '3'
+
+services:
+
+  search:
+    labels:
+      - 'traefik.port=8983'
+      - 'traefik.frontend.rule=Host:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.entryPoints=http'
+
+  webproxy:
+    labels:
+      - 'traefik.port=80'
+      - 'traefik.frontend.rule=Host:${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.entryPoints=http,https'
+
+  mail:
+    labels:
+      - 'traefik.port=8025'
+      - 'traefik.frontend.rule=Host:mail.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.entryPoints=http'
+
+  proxy:
+    image: traefik
+    container_name: proxy
+    ports:
+      - '8080:8080'
+      - '80:80'
+      - '443:443'
+    environment:
+      PRIMARY_DOMAIN: ${PRIMARY_DOMAIN}
+      BASE_DOMAIN: ${BASE_DOMAIN}
+    command: |
+      -c /dev/null \
+      --api \
+      --docker \
+      --logLevel=DEBUG \
+      --accessLog \
+      --entryPoints="Name:https Address::443 TLS:/certs/ssl-cert-snakeoil.crt,/certs/ssl-cert-snakeoil.key" \
+      --entryPoints="Name:http Address::80"
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './conf/traefik/certs:/certs'
