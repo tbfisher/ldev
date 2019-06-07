@@ -1,3 +1,5 @@
+# Development environment with profiler.
+
 version: "3"
 
 services:
@@ -20,20 +22,6 @@ services:
       - 'traefik.backend=webgrind'
       - 'traefik.port=8080'
       - 'traefik.frontend.rule=Host:webgrind.${BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http'
-
-  netdata:
-    image: titpetric/netdata
-    cap_add:
-      - SYS_PTRACE
-    volumes:
-      - "webgrind:/tmp:rw"
-      - "/proc:/host/proc:ro"
-      - "/sys:/host/sys:ro"
-    labels:
-      - 'traefik.backend=netdata'
-      - 'traefik.port=19999'
-      - 'traefik.frontend.rule=Host:netdata.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http'
 
 volumes:
