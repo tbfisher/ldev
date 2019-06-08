@@ -10,6 +10,12 @@ services:
       - 'traefik.frontend.rule=Host:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http'
 
+  php:
+    links:
+      - 'proxy:${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'proxy:www.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'search:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+
   webproxy:
     labels:
       - 'traefik.port=80'
