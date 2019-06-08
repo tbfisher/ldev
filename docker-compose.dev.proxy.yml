@@ -19,7 +19,7 @@ services:
   webproxy:
     labels:
       - 'traefik.port=80'
-      - 'traefik.frontend.rule=Host:${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.rule=Host:www.${PRIMARY_DOMAIN}.${BASE_DOMAIN},${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http,https'
 
   mail:
