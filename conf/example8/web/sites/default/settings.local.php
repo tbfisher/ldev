@@ -14,10 +14,10 @@ $databases['default'] = [
     'host' => $_SERVER['DB_HOST'],
     'prefix' => '',
     // @see https://www.drupal.org/node/2754539
-    'collation' => 'utf8_general_ci',
+    //'collation' => 'utf8_general_ci',
     // or
-    //'charset' => 'utf8mb4',
-    //'collation' => 'utf8mb4_general_ci',
+    'charset' => 'utf8mb4',
+    'collation' => 'utf8mb4_general_ci',
   ],
 ];
 
