@@ -25,7 +25,7 @@ services:
   mail:
     labels:
       - 'traefik.port=8025'
-      - 'traefik.frontend.rule=Host:mail.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.rule=Host:mail.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http'
 
   proxy:
