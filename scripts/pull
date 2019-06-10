@@ -134,12 +134,19 @@ if [[ -f $proj_dir/code ]]; then
     exit 1
 fi
 
-# cause script to fail if alias undefined or non-functional
-src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
+ensure_drush_alias() {
+    # cause script to fail if alias undefined or non-functional
+    src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
+    util::echo info "source alias:"
+    echo "$src_alias" | jq
+    echo
+}
 
 list() {
     local src_envs
+    set +e
     src_envs=$(drush-local sa | grep -E "^@$drush_alias_prefix.[^.]+$" | sed "s/@$drush_alias_prefix\.//g")
+    set -e
     util::echo info "src-alias values:"
     echo "$src_envs"
     echo
@@ -162,6 +169,8 @@ backup-drupal() {
 }
 
 pull-drupal() {
+    ensure_drush_alias
+
     local dumpfile dumpfile_size
     if [[ -z "$1" ]]; then
         dumpfile=$backup_dir/$backup_prefix.$drupal_multisite_id.$src_env.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
@@ -195,6 +204,9 @@ fix-volume-perms() {
 }
 
 configure-drupal() {
+    ## for stage_file_proxy config below.
+    #ensure_drush_alias
+
     local update
     update=$1
 
@@ -217,22 +229,23 @@ configure-drupal() {
     #drush -y csim local
     #set -e
 
-    # stage_file_proxy
-    if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
-        # uri from status
-        origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
-        # uri from alias
-        #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
-        drush -y cset stage_file_proxy.settings origin "$origin"
-    else
-        drush -y cset stage_file_proxy.settings origin "$drupal_stage_file_proxy_origin"
-    fi
+    ## stage_file_proxy
+    #if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
+    #    # uri from status
+    #    origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
+    #    # uri from alias
+    #    #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
+    #    drush -y cset stage_file_proxy.settings origin "$origin"
+    #else
+    #    drush -y cset stage_file_proxy.settings origin "$drupal_stage_file_proxy_origin"
+    #fi
 
     drush user-unblock 1
     drush uli 1 admin/reports/status
 }
 
 pull-files-drupal() {
+    ensure_drush_alias
 
     local ssh_id
     ssh_id=~/.ssh/id_rsa
@@ -288,10 +301,6 @@ if [[ ! -z "$list" ]]; then
     echo
     exit 0
 fi
-
-util::echo info "source alias:"
-echo "$src_alias" | jq
-echo
 
 if [[ ! -z "$drupal_backup" ]]; then
     util::echo info "backing up local drupal database"

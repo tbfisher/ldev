@@ -27,7 +27,7 @@ brew install pv jq
 3. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
 
   ```
-  127.0.0.1 example8.localhost search.example8.localhost mail.localhost webgrind.localhost netdata.localhost
+  127.0.0.1 example8.localhost search.example8.localhost mail.localhost webgrind.localhost
   ```
 
   Note in `.env` you can configure different domain names.
