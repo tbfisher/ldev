@@ -139,8 +139,13 @@ if [[ -f $proj_dir/code ]]; then
     exit 1
 fi
 
-# cause script to fail if alias undefined or non-functional
-src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
+ensure_drush_alias() {
+    # cause script to fail if alias undefined or non-functional
+    src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
+    util::echo info "source alias:"
+    echo "$src_alias" | jq
+    echo
+}
 
 list() {
     # for terminus
@@ -173,6 +178,8 @@ backup-drupal() {
 }
 
 pull-drupal() {
+    ensure_drush_alias
+
     local dumpfile file
     dumpfile=
 
@@ -244,6 +251,8 @@ fix-volume-perms() {
 }
 
 configure-drupal() {
+    ensure_drush_alias
+
     local update
     update=$1
 
@@ -296,6 +305,7 @@ EOS
 }
 
 pull-files-drupal() {
+    ensure_drush_alias
 
     local ssh_id
     ssh_id=~/.ssh/id_rsa
@@ -345,10 +355,6 @@ if [[ ! -z "$list" ]]; then
     echo
     exit 0
 fi
-
-util::echo info "source alias:"
-echo "$src_alias" | jq
-echo
 
 if [[ ! -z "$drupal_backup" ]]; then
     util::echo info "backing up local drupal database"
