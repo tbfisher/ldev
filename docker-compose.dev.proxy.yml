@@ -10,16 +10,22 @@ services:
       - 'traefik.frontend.rule=Host:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http'
 
+  php:
+    links:
+      - 'proxy:${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'proxy:www.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'search:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+
   webproxy:
     labels:
       - 'traefik.port=80'
-      - 'traefik.frontend.rule=Host:${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.rule=Host:www.${PRIMARY_DOMAIN}.${BASE_DOMAIN},${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http,https'
 
   mail:
     labels:
       - 'traefik.port=8025'
-      - 'traefik.frontend.rule=Host:mail.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
+      - 'traefik.frontend.rule=Host:mail.${BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http'
 
   proxy:
