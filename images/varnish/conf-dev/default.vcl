@@ -68,8 +68,8 @@ import std;
 # See https://varnish-cache.org/docs/4.1/reference/vcl.html#backend-definition
 backend default {
 
-  .host = "web";
-  .port = "80";
+  .host = %VARNISH_VCL_DEFAULT_BACKEND_HOST%;
+  .port = %VARNISH_VCL_DEFAULT_BACKEND_PORT%;
   .max_connections = 100;
   .connect_timeout = 60s;
   .first_byte_timeout = 300s;
@@ -81,8 +81,7 @@ backend default {
 acl purge_ban {
   /* Simple access control list for allowing item purge for the self machine */
   #"127.0.0.1"/32; // We can use '"localhost";' instead
-  # The full range of possible IP's with the docker0 bridge interface.
-  "172.17.0.0/16";
+  %VARNISH_VCL_DEFAULT_ACL_PURGE_BAN%;
 }
 #acl allowed_monitors {
 #  /* Simple access control list for allowing item purge for the self machine */
