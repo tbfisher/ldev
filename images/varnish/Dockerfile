@@ -41,6 +41,9 @@ ENV VARNISH_DAEMON_OPTS -p http_req_hdr_len=16384 -p http_resp_hdr_len=16384
 COPY bin/start-varnishd.sh /usr/local/bin/start-varnishd
 RUN chmod +x /usr/local/bin/start-varnishd
 
+ENV VARNISH_VCL_DEFAULT_BACKEND_HOST='"web"'
+ENV VARNISH_VCL_DEFAULT_BACKEND_PORT='"80"'
+ENV VARNISH_VCL_DEFAULT_ACL_PURGE_BAN='"php"'
 ARG vcl_src=conf/default.vcl
 COPY $vcl_src /etc/varnish/default.vcl
 
