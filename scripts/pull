@@ -232,7 +232,7 @@ configure-drupal() {
     #set -e
 
     # stage_file_proxy
-    if [[ -z "$drual_stage_file_proxy_origin" ]]; then
+    if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
         # uri from status
         origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
         # uri from alias
