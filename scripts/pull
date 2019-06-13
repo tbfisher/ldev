@@ -204,8 +204,10 @@ fix-volume-perms() {
 }
 
 configure-drupal() {
-    ## for stage_file_proxy config below.
-    #ensure_drush_alias
+    ## alias needed for stage_file_proxy config below.
+    if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
+        ensure_drush_alias
+    fi
 
     local update
     update=$1
@@ -229,16 +231,16 @@ configure-drupal() {
     drush -y csim local
     set -e
 
-    ## stage_file_proxy
-    #if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
-    #    # uri from status
-    #    origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
-    #    # uri from alias
-    #    #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
-    #    drush -y cset stage_file_proxy.settings origin "$origin"
-    #else
-    #    drush -y cset stage_file_proxy.settings origin "$drupal_stage_file_proxy_origin"
-    #fi
+    # stage_file_proxy
+    if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
+        # uri from status
+        origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
+        # uri from alias
+        #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
+        drush -y cset stage_file_proxy.settings origin "$origin"
+    else
+        drush -y cset stage_file_proxy.settings origin "$drupal_stage_file_proxy_origin"
+    fi
 
     drush user-unblock 1
     drush uli 1 admin/reports/status
