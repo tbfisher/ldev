@@ -251,8 +251,6 @@ fix-volume-perms() {
 }
 
 configure-drupal() {
-    ensure_drush_alias
-
     local update
     update=$1
 
