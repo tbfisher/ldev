@@ -38,6 +38,8 @@ services:
     environment:
       WEB_DOCROOT: /var/www/_www
       WEB_PHPFPM: "php:9000"
+    depends_on:
+      - php
 
   webproxy:
     build:
@@ -46,3 +48,5 @@ services:
       VARNISH_VCL_DEFAULT_BACKEND_HOST: '"web"'
       VARNISH_VCL_DEFAULT_BACKEND_PORT: '"80"'
       VARNISH_VCL_DEFAULT_ACL_PURGE_BAN: '"php"'
+    depends_on:
+      - web
