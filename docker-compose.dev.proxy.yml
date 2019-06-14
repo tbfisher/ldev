@@ -16,7 +16,7 @@ services:
       - 'proxy:www.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
       - 'search:search.${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
 
-  webproxy:
+  web:
     labels:
       - 'traefik.port=80'
       - 'traefik.frontend.rule=Host:www.${PRIMARY_DOMAIN}.${BASE_DOMAIN},${PRIMARY_DOMAIN}.${BASE_DOMAIN}'
