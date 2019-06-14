@@ -42,13 +42,6 @@ services:
       - "files_public:/var/www_files/public:rw"
       - "files_private:/var/www_files/private:rw"
 
-  webproxy:
-    build:
-      args:
-        vcl_src: conf-dev/default.vcl
-    ports:
-      - '80'
-
   mail:
     image: mailhog/mailhog
     ports:
