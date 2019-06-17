@@ -390,7 +390,7 @@ sub vcl_recv {
     set req.http.Cookie
       = regsuball(
           req.http.Cookie,
-          ";(S{1,2}ESS[a-z0-9]+|NO_CACHE|OATMEAL|CHOCOLATECHIP|big_pipe_nojs)=",
+          ";(S{1,2}ESS[a-z0-9]+|NO_CACHE|OATMEAL|CHOCOLATECHIP|big_pipe_nojs|XDEBUG_SESSION|XDEBUG_PROFILE)=",
           "; \1="
         );
     # Remove from the header any single Cookie not prefixed with a space until
@@ -413,6 +413,7 @@ sub vcl_recv {
     || req.http.Cookie ~ "NO_CACHE"
     || req.http.Cookie ~ "OATMEAL"
     || req.http.Cookie ~ "CHOCOLATECHIP"
+    || req.http.Cookie ~ "XDEBUG_"
   ) {
     return (pass);
   }
@@ -842,7 +843,7 @@ sub vcl_backend_response {
   if ( beresp.ttl <= 0s ) {
     /* Varnish determined the object was not cacheable */
     set beresp.http.X-Varnish-Cacheable = "NO:Not Cacheable";
-  } elsif ( bereq.http.Cookie ~ "(SESS|SSESS|NO_CACHE|OATMEAL|CHOCOLATECHIP)" ) {
+  } elsif ( bereq.http.Cookie ~ "(SESS|SSESS|NO_CACHE|OATMEAL|CHOCOLATECHIP|XDEBUG_)" ) {
     /* We don't wish to cache content for logged in users or with certain cookies. */
     # Related with our 9th stage on vcl_recv
     set beresp.http.X-Varnish-Cacheable = "NO:Cookies";
