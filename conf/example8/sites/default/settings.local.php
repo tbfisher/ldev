@@ -32,6 +32,7 @@ if (
   $_SERVER['SERVER_PORT'] = 443;
 }
 
+$settings['trusted_host_patterns'][] = '^localhost$';
 $settings['trusted_host_patterns'][] = '\.' . $_SERVER['BASE_DOMAIN'] . '$';
 
 $settings['file_temporary_path'] = '/tmp';
