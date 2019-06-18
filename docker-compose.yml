@@ -34,7 +34,7 @@ services:
       ENVIRONMENT: ${ENVIRONMENT}
 
   web:
-    build: ./images/pantheon-nginx
+    image: tbfisher/drupal-web:nginx-1.14-dev-1
     environment:
       WEB_DOCROOT: /var/www/web
       WEB_PHPFPM: "php:9000"
