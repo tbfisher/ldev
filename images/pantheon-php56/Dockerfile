@@ -1,4 +1,3 @@
-FROM tbfisher/drupal-php:7.2-dev-5
+FROM tbfisher/drupal-php:5.6-dev-5
 
-COPY conf/php.ini                           /usr/local/etc/php/php.ini
-COPY conf/php-cli.ini                       /usr/local/etc/php/php-cli.ini
+COPY conf/pantheon-php.ini /usr/local/etc/php/conf.d/pantheon-php.ini
