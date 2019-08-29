@@ -23,7 +23,15 @@ $databases['default'] = [
 
 // Behind proxy.
 $conf['reverse_proxy'] = TRUE;
-$conf['reverse_proxy_addresses'] = [$_SERVER['REMOTE_ADDR']];
+// Dev only, production will want to specify forwarding proxies.
+if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $conf['reverse_proxy_addresses'] = preg_split('/,\s*/', $_SERVER['HTTP_X_FORWARDED_FOR']);
+    $conf['reverse_proxy_addresses'] = array_splice($conf['reverse_proxy_addresses'], 1);
+}
+else {
+    $conf['reverse_proxy_addresses'] = [];
+}
+$conf['reverse_proxy_addresses'][] = $_SERVER['REMOTE_ADDR'];
 // HTTPS behind proxy.
 if (
   isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
