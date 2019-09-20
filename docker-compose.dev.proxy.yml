@@ -29,7 +29,7 @@ services:
       - 'traefik.frontend.entryPoints=http'
 
   proxy:
-    image: traefik
+    image: traefik:1.7
     container_name: proxy
     ports:
       - '8080:8080'
