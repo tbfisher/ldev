@@ -32,6 +32,7 @@ Base branches:
 - `drupal-7`, `drupal-8` -- Host-agnostic Drupal.
 - `pantheon-drupal-7`, `pantheon-drupal-8` -- [Pantheon](https://pantheon.io)-hosted Drupal.
 - `acquia-drupal-7`, `acquia-drupal-8` -- [Acquia](https://www.acquia.com/)-hosted Drupal.
+- `platformsh-drupal-7`, `platformsh-drupal-8` -- [platform.sh](https://platform.sh/)
 
 Pick a base branch, and create a branch for your project.
 
