@@ -6,6 +6,7 @@
 - [Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
 - [Pipe Viewer](http://www.ivarch.com/programs/pv.shtml)
 - [jq](https://stedolan.github.io/jq/)
+- Ports 80 and 443 on your host system.
 
 On a mac:
 
@@ -14,15 +15,19 @@ curl -O https://download.docker.com/mac/stable/Docker.dmg
 brew install pv jq
 ```
 
-## Setup
+## Getting Started
 
-1. Build -- checks out code and configures it for this local hosting environment:
+1. Shell aliases to run common commands like `drush` and `mysql` inside the correct containers. Open the script to see exactly what commands it sets up.
 
   ```bash
-  ./scripts/build
+  source scripts/env
   ```
 
-2. Optionally edit `.env` with your own settings.
+2. Build -- checks out code and configures it for this local hosting environment.
+
+  ```bash
+  build
+  ```
 
 3. DNS -- You need to set up your system to resolve the domain names this environment expects to localhost. An easy way to do this is to edit `/etc/hosts` and append:
 
@@ -30,31 +35,7 @@ brew install pv jq
   127.0.0.1 example8.localhost search.example8.localhost mail.localhost webgrind.localhost
   ```
 
-  Note in `.env` you can configure different domain names.
-
-## Start up
-
-1. Start up docker containers:
-
-  ```bash
-  docker-compose up -d
-  ```
-
-  Note this will try to claim ports 80 and 443 on your host system. If you're already running a web server, this step will fail.
-
-2. Shell aliases to run common commands like `drush` and `mysql` inside the correct containers. Open the script to see exactly what commands it sets up.
-
-  ```bash
-  source scripts/env
-  ```
-
-  For example, run site-install.
-
-  ```bash
-  drush-root si -y --db-url=mysql://drupal:drupal@db/drupal --config-dir=../config
-  ```
-
-3. Pull content.
+4. Pull content.
 
   The pull script [`scripts/pull`](scripts/pull) copies the database, files, and alters the site configuration to run in this local environment.
 
@@ -66,6 +47,33 @@ brew install pv jq
   ```
 
 ## Usage
+
+### Customize
+
+Edit [`.env`](.env) with your own settings.
+
+### Environment Life Cycle
+
+After running `build`, to start up you can init the shell and start up
+
+```bash
+source scripts/env && docker-compose up -d
+```
+
+Shut down
+
+```bash
+docker-compose down
+
+# also removes volumes (drupal files, database files)
+docker-compose down -v
+```
+
+Clean up -- deletes all code and docker artifacts
+
+```bash
+build -c
+```
 
 ### URLs
 
@@ -123,12 +131,4 @@ docker-compose up -d
 docker-compose logs
 # follow (stream log to stdout)
 docker-compose logs -f
-```
-
-### Clean up
-
-Delete containers. `-v` will also delete volumes (database, files).
-
-```bash
-docker-compose down -v
 ```
