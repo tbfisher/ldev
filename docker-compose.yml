@@ -30,7 +30,6 @@ services:
       SEARCH_HOST: search
       BASE_DOMAIN: ${BASE_DOMAIN}
       PRIMARY_DOMAIN: ${PRIMARY_DOMAIN}
-      PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
       ENVIRONMENT: ${ENVIRONMENT}
 
   web:
