@@ -27,6 +27,8 @@ services:
   #    - "./code/example8/docroot/sites/all/modules/contrib/search_api_solr/solr-conf/3.x:/opt/solr/example/solr/collection1/conf:ro"
 
   php:
+    environment:
+      PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
     ports:
       - '9000'
     volumes:
