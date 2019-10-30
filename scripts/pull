@@ -144,9 +144,8 @@ ensure_drush_alias() {
 
 list() {
     local src_envs
-    set +e
-    src_envs=$(drush-local sa | grep -E "^@$drush_alias_prefix.[^.]+$" | sed "s/@$drush_alias_prefix\.//g")
-    set -e
+    src_envs=$(drush-local sa --fields=name --format=list | grep "$pantheon_project" | grep -v '\*')
+
     util::echo info "src-alias values:"
     echo "$src_envs"
     echo
