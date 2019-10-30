@@ -165,7 +165,7 @@ ensure_perms() {
 
 list() {
     local src_envs
-    src_envs=$(drush-local sa | grep -E "^@$drush_alias_prefix.[^.]+$" | sed "s/@$drush_alias_prefix\.//g")
+    src_envs=$(drush-local sa --fields=name --format=list | grep -E "^$drush_alias_prefix" | grep -v '\*')
 
     util::echo info "src-alias values:"
     echo "$src_envs"
