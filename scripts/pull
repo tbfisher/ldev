@@ -167,7 +167,7 @@ list() {
     # ls will non-zero exit if pattern doesn't match
     set +e
     util::echo info 'source dumps (on local):'
-    ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_${src_env}_"*.sql.gz
+    ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_"*.sql.gz
     echo
     util::echo info 'local backups:'
     ls -lh "$backup_dir/$backup_prefix.local."*.sql.gz
