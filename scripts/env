@@ -96,6 +96,19 @@ drush-local() {
     $LDEV_DRUSH_LOCAL "$@"
 }
 
+# composer
+composer() {
+    (
+    cd "$proj_dir" && \
+    docker exec -it \
+        --workdir /var/www \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --user root:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        composer "$@"
+    )
+}
+
 # interactive mysql in db container
 mysql() {
     (
