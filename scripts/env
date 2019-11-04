@@ -28,6 +28,9 @@ drush_container=/var/www/vendor/bin/drush
 drush_local=$proj_dir/code/example8/vendor/bin/drush
 drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
 drupal_console_container=../vendor/bin/drupal
+drupal_phpunit_container=../vendor/bin/phpunit
+drupal_phpunit_conf_container=core/phpunit.xml.dist
+webserver_container=web
 mysql_container=db
 mysql_user=root
 mysql_pass=$DATABASE_PASSWORD
@@ -97,6 +100,30 @@ drupal() {
         --user root:www-data \
         "$(docker-compose ps -q $php_container)" \
         $drupal_console_container "$@"
+    )
+}
+
+# phpunit
+phpunit() {
+    (
+    cd "$proj_dir" && \
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --user root:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drupal_phpunit_container -c $drupal_phpunit_conf_container "$@"
+    )
+}
+phpunit-debug() {
+    (
+    cd "$proj_dir" && \
+    docker exec -it \
+        --env COLUMNS=$COLUMNS --env LINES=$LINES \
+        --env "XDEBUG_CONFIG=remote_enable=1" \
+        --env "PHP_IDE_CONFIG=$php_ide_config" \
+        --user root:www-data \
+        "$(docker-compose ps -q $php_container)" \
+        $drupal_phpunit_container -c $drupal_phpunit_conf_container "$@"
     )
 }
 

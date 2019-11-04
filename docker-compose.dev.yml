@@ -29,6 +29,9 @@ services:
   php:
     environment:
       PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
+      SIMPLETEST_BASE_URL: "http://${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
+      SIMPLETEST_DB: "mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@db/${DATABASE_NAME}"
+      #BROWSERTEST_OUTPUT_DIRECTORY: /var/www_files/public/browsertest_output
     ports:
       - '9000'
     volumes:
