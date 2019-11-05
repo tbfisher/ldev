@@ -90,7 +90,7 @@ fi
 # drush
 if [ ! -d code/drush ]; then
     util::echo info "installing drush"
-    git clone --depth 1 --branch 8.1.17 git@github.com:drush-ops/drush.git code/drush
+    git clone --depth 1 --branch 8.3.1 git@github.com:drush-ops/drush.git code/drush
     composer --working-dir=code/drush install -o --no-dev
     ./code/drush/drush dl --destination=code/drush/commands registry_rebuild-7.x composer-8.x
 fi
