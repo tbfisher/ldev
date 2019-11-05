@@ -64,6 +64,7 @@ EOF
 
 # parse options
 list=
+list_refresh=
 drupal_backup=
 drupal_config=
 drupal_config_update=
@@ -72,11 +73,15 @@ drupal_pull_create=
 drupal_pull_dumpfile=
 drupal_pull_files=
 drupal_pull_private=
-while getopts ":lbcudpD:fFvh" OPTION
+while getopts ":lLbcudpD:fFvh" OPTION
 do
     case $OPTION in
         l)
             list=yes
+            ;;
+        L)
+            list=yes
+            list_refresh=yes
             ;;
         b)
             drupal_backup=yes
@@ -149,7 +154,9 @@ ensure_drush_alias() {
 
 list() {
     # for terminus
-    terminus aliases
+    if [[ -z "$list_refresh" ]]; then
+        terminus aliases
+    fi
 
     local src_envs
     src_envs=$(drush-local sa | grep "pantheon.$pantheon_project" | sed "s/@pantheon\.${pantheon_project}\.//g")
@@ -160,7 +167,7 @@ list() {
     # ls will non-zero exit if pattern doesn't match
     set +e
     util::echo info 'source dumps (on local):'
-    ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_${src_env}_"*.sql.gz
+    ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_"*.sql.gz
     echo
     util::echo info 'local backups:'
     ls -lh "$backup_dir/$backup_prefix.local."*.sql.gz
