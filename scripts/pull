@@ -245,7 +245,7 @@ configure-drupal() {
     drupal -n init --destination=/root/.console
 
     drush user-unblock 1
-    drush uli 1 admin/reports/status
+    drush uli --uid=1 admin/reports/status
 }
 
 pull-files-drupal() {
