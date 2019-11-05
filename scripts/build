@@ -60,9 +60,11 @@ done
 cd "$proj_dir"
 
 if [[ ! -z "$clean" ]]; then
-    response=$(util::prompt "This will delete code, .env, etc. Are you sure (y|N)?")
+    response=$(util::prompt "This will delete code, .env, docker containers, volumes, etc. Are you sure (y|N)?")
     case "$response" in
         y|yes)
+            cd "$proj_dir"
+            docker-compose down --volumes --remove-orphans
             if [ -f .env ]; then
                 rm .env
             fi
@@ -74,6 +76,7 @@ if [[ ! -z "$clean" ]]; then
                 util::echo alert "Attempting to delete the data directory via sudo:"
                 util::sudo rm -r code
             fi
+            cd "$pwd_dir";
             ;;
         *)
             util::echo info "Clean canceled."
