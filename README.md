@@ -36,18 +36,37 @@ brew install pv jq
   127.0.0.1 example8.localhost search.example8.localhost mail.localhost webgrind.localhost
   ```
 
-4. Pull content.
+4. Start up
 
-  The pull script [`scripts/pull`](scripts/pull) copies the database, files, and alters the site configuration to run in this local environment.
+  ```
+  docker-compose up -d
+  ```
 
-  ```bash
-  # help
-  pull -h
-  # pull from test, run database updates, configure for local dev:
-  pull -cud
+  View the status of the environment, port mappings
+
+  ```
+  docker-compose ps
+  ```
+
+  All set!
+
+  ```
+  drush -y si
+  drush uli 1 admin/reports/status
   ```
 
 ## Usage
+
+### Pulling Content
+
+The pull script [`scripts/pull`](scripts/pull) copies the database, files, and alters the site configuration to run in this local environment.
+
+```bash
+# help
+pull -h
+# pull from test, run database updates, configure for local dev:
+pull -cud
+```
 
 ### Customize
 
