@@ -34,6 +34,7 @@ mysql_pass=$DATABASE_PASSWORD
 mysql_db=$DATABASE_NAME
 build_script="$script_dir/build"
 pull_script="$script_dir/pull"
+xdebug_script="$script_dir/xdebug"
 
 # drush as webserver user
 drush() {
@@ -141,60 +142,5 @@ pull() {
 
 # enable/disable xdebug in a php-fpm container
 xdebug() {
-    cd "$proj_dir" || return 1
-    # container path to ini to write to
-    local ini_path
-    ini_path=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-    # usage
-    if [[ -z "$1" ]]; then
-        cat << EOF
-usage: xdebug en|dis [container] [host-ip]
-EOF
-        return
-    fi
-    # defaults
-    local container
-    if [[ -z "$2" ]]; then
-        container=$php_container
-    else
-        container="$2"
-    fi
-    # docker host ip
-    local host_ip unameOut
-    if [[ -z "$3" ]]; then
-        host_ip="$(docker::host-ip)"
-    else
-        host_ip="$3"
-    fi
-    # grab zend_extension=path/to/xdebug.so line (changes per php build)
-    local zend_extension
-    zend_extension=$(docker-compose exec "$container" /bin/bash -c "cat '$ini_path' | grep -m 1 'zend_extension=' | sed 's/^;//'")
-    # update ini
-    local ini_contents
-    if [[ $1 == 'en' ]]; then
-        ini_contents=$(cat << EOF
-$zend_extension
-[xdebug]
-xdebug.remote_enable=1
-xdebug.remote_host=$host_ip
-xdebug.profiler_enable_trigger=1
-xdebug.profiler_output_dir=/tmp/webgrind
-EOF
-)
-    else
-        ini_contents=$(cat << EOF
-;$zend_extension
-EOF
-)
-    fi
-    util::echo info "setting xdebug config on container $container to:"
-    util::echo info "------"
-    echo "$ini_contents"
-    util::echo info "------"
-    docker-compose exec "$container" /bin/bash -c "echo '$ini_contents' > '$ini_path'"
-    # restart php-fpm
-    util::echo info "restarting php-fpm..."
-    docker-compose exec "$container" /bin/bash -c 'kill -USR2 1'
-    util::echo info "done."
-    cd "$pwd_dir" || return
+    $xdebug_script "$@"
 }
