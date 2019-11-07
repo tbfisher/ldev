@@ -16,10 +16,16 @@ services:
     build: ./images/redis
 
   search:
-    image: guywithnose/solr:3.6.2
+    image: solr:8
+    # https://github.com/docker-solr/docker-solr#using-docker-compose
+    entrypoint:
+      - docker-entrypoint.sh
+      - solr-precreate
+      - drupal
+      - /opt/drupal
 
   php:
-    image: tbfisher/drupal-php:7.2-dev-5
+    image: tbfisher/drupal-php:7.3-dev-5
     environment:
       DB_HOST: db
       DB_USER: ${DATABASE_USER}
@@ -33,7 +39,7 @@ services:
       ENVIRONMENT: ${ENVIRONMENT}
 
   web:
-    image: tbfisher/drupal-web:nginx-1.8-dev-1
+    image: tbfisher/drupal-web:nginx-1.16-dev-1
     environment:
       WEB_DOCROOT: /var/www/web
       WEB_PHPFPM: "php:9000"
