@@ -1,4 +1,4 @@
-FROM mariadb:5.5
+FROM mariadb:10.4.5
 
 COPY ./conf/conf.d /etc/mysql/conf.d
 COPY ./conf/docker-entrypoint-initdb.d ./docker-entrypoint-initdb.d
