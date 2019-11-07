@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+
+# exit on error, unset vars
+set -eu
+# exit early for errors in pipelines
+set -o pipefail
+
+# Gets the directory containing this file.
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# shellcheck source=inc/util.sh
+source "$script_dir/inc/util.sh"
+
+# current directory
+pwd_dir=$(pwd)
+# git/project root directory
+proj_dir=$(util::realpath "$script_dir/..")
+
+# @todo ?
+export COLUMNS=80
+export LINES=32
+
+# Include docker-compose env.
+if [ -z "${ENV_SCRIPT+x}" ]; then
+    ENV_SCRIPT=env
+fi
+# shellcheck source=env
+source "$script_dir/$ENV_SCRIPT"
+
+if [ -z "${DEFAULT_PHP_CONTAINER+x}" ]; then
+    DEFAULT_PHP_CONTAINER=php
+fi
+
+default_host_ip="$(docker::host-ip)"
+
+# for docker cmds
+cd "$proj_dir"
+
+usage() {
+    cat << EOF
+usage: $0 [options] [src-key]
+
+Enable/disable Xdebug.
+
+ARGUMENTS:
+    command   One of "en" to enable, or "dis" to disable, defaults to "en".
+    container The php container to enable xdebug in, defaults to "$DEFAULT_PHP_CONTAINER".
+    host-ip   Host ip address (for Xdebug to connect to), defaults to "$default_host_ip".
+
+OPTIONS:
+    -a        Enable xdebug.remote_autostart
+              see https://xdebug.org/docs/remote#remote_autostart
+    -v        Verbose output, prints every command to stdout.
+    -h        Prints this help message.
+EOF
+    echo
+}
+
+# parse options
+remote_autostart=0
+while getopts ":avh" OPTION
+do
+    case $OPTION in
+        a)
+            remote_autostart=1
+            ;;
+        v)
+            set -x
+            ;;
+        h)
+            usage
+            exit
+            ;;
+        \?)
+            util::echo error "Invalid option: -$OPTARG" >&2
+            usage
+            exit 1
+            ;;
+        :)
+            util::echo error "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+# parse arguments
+shift "$((OPTIND-1))"
+# if $1 is unbound
+if [ -z "${1+x}" ]; then
+    comm=en
+else
+    case "$1" in
+        en)
+            comm='en'
+            ;;
+        dis)
+            comm='dis'
+            ;;
+        :)
+            util::echo error "Argument command \"$1\" not one of \"en\" or \"dis\"." >&2
+            exit 1
+            ;;
+    esac
+fi
+if [ -z "${2+x}" ]; then
+    php_container=$DEFAULT_PHP_CONTAINER
+else
+    php_container=$2
+fi
+if [ -z "${3+x}" ]; then
+    host_ip=$default_host_ip
+else
+    host_ip=$3
+fi
+
+# container path to ini to write to
+ini_path=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# grab zend_extension=path/to/xdebug.so line (changes per php build)
+zend_extension=$(docker-compose exec "$php_container" /bin/bash -c "cat '$ini_path' | grep -m 1 'zend_extension=' | sed 's/^;//'")
+
+# update ini
+if [[ $comm == 'en' ]]; then
+    ini_contents=$(cat << EOF
+$zend_extension
+[xdebug]
+xdebug.remote_enable=1
+xdebug.remote_host=$host_ip
+xdebug.remote_autostart=$remote_autostart
+xdebug.profiler_enable_trigger=1
+xdebug.profiler_output_dir=/tmp/webgrind
+EOF
+)
+else
+    ini_contents=$(cat << EOF
+;$zend_extension
+EOF
+)
+fi
+util::echo info "setting xdebug config on container $php_container to:"
+util::echo info "------"
+echo "$ini_contents"
+util::echo info "------"
+docker-compose exec "$php_container" /bin/bash -c "echo '$ini_contents' > '$ini_path'"
+# restart php-fpm
+util::echo info "restarting php-fpm..."
+docker-compose exec "$php_container" /bin/bash -c 'kill -USR2 1'
+util::echo info "done."
+
+cd "$pwd_dir"
