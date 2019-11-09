@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# Pull content from production or staging sites.
-
 # exit on error, unset vars
 set -eu
 # exit early for errors in pipelines
@@ -15,27 +13,30 @@ source "$script_dir/inc/util.sh"
 
 # current directory
 pwd_dir=$(pwd)
-# git/project root directory
-proj_dir=$(util::realpath "$script_dir/..")
 
-# @todo ?
-export COLUMNS=80
-export LINES=32
+# shell window dims for fitting container output to host.
+if [ -z "${COLUMNS+x}" ]; then
+    export COLUMNS=80
+fi
+if [ -z "${LINES+x}" ]; then
+    export LINES=32
+fi
 
-# Include docker-compose env.
+# Include ldev env.
+if [ -z "${LDEV_ENV_SCRIPT+x}" ]; then
+    LDEV_ENV_SCRIPT="$script_dir/env"
+fi
 # shellcheck source=env
-source "$script_dir/env"
+source "$LDEV_ENV_SCRIPT"
 
+# default env key to pull from.
 default_env=dev
+# pantheon project name
 pantheon_project=example7
+# pantheon project id
 pantheon_project_id=8c5c12cf-e8b4-4fff-8a59-34472c80dba7
-drupal_root="$proj_dir/code/example7"
-php_container=php
-backup_dir="$PULL_CACHEDIR"
-backup_prefix="$PULL_PREFIX"
-
-# for docker cmds
-cd "$proj_dir"
+# local path to drupal root
+drupal_root="$LDEV_PROJ_DIR/code/example7"
 
 usage() {
     cat << EOF
@@ -139,10 +140,16 @@ fi
 src=pantheon.$pantheon_project.$src_env
 
 # environment
-if [[ -f $proj_dir/code ]]; then
-    util::echo error "no code found at $proj_dir/code, did you run ./scripts/build?"
+if [[ -f $LDEV_PROJ_DIR/code ]]; then
+    util::echo error "no code found at $LDEV_PROJ_DIR/code, did you run ./scripts/build?"
     exit 1
 fi
+
+ensure_cache_dir() {
+    if [[ ! -d "$LDEV_PULL_CACHEDIR" ]]; then
+        mkdir -p "$LDEV_PULL_CACHEDIR"
+    fi
+}
 
 ensure_drush_alias() {
     # cause script to fail if alias undefined or non-functional
@@ -150,6 +157,16 @@ ensure_drush_alias() {
     util::echo info "source alias:"
     echo "$src_alias" | jq
     echo
+}
+
+ensure_perms() {
+    local cmds
+    # pantheon private dir is in public dir, ensure it exists.
+    cmds='mkdir -p /var/www_files/public/private;'
+    # ensure files dirs writable by webserver.
+    cmds+='chgrp -R www-data /var/www_files/public;'
+    cmds+='chmod -R g+w /var/www_files/public;'
+    docker-compose exec $LDEV_PHP_CONTAINER /bin/bash -c "$cmds"
 }
 
 list() {
@@ -167,18 +184,20 @@ list() {
     # ls will non-zero exit if pattern doesn't match
     set +e
     util::echo info 'source dumps (on local):'
-    ls -lh "$backup_dir/$backup_prefix.${pantheon_project}_"*.sql.gz
+    ls -lh "$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.${pantheon_project}_"*.sql.gz
     echo
     util::echo info 'local backups:'
-    ls -lh "$backup_dir/$backup_prefix.local."*.sql.gz
+    ls -lh "$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.local."*.sql.gz
     echo
     set -e
 }
 
 backup-drupal() {
+    ensure_cache_dir
+
     local dumpfile dumpfile_size
-    dumpfile=$backup_dir/$backup_prefix.local.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
-    dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.local.*.sql.gz")
+    dumpfile=$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.local.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
+    dumpfile_size=$(util::filesize "$LDEV_PULL_CACHEDIR" "$LDEV_PULL_PREFIX.local.*.sql.gz")
     drush sql-dump --structure-tables-list=cache,cache*,watchdog | \
         gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
     util::echo info "wrote to $dumpfile"
@@ -186,6 +205,8 @@ backup-drupal() {
 
 pull-drupal() {
     ensure_drush_alias
+    ensure_cache_dir
+
 
     local dumpfile file
     dumpfile=
@@ -203,7 +224,7 @@ pull-drupal() {
             "$pantheon_project.$src_env")
         file=$(echo "$backups" | \
             jq -r 'map( { file, date } ) | sort_by(.date) | last | .file')
-        dumpfile="$backup_dir/$backup_prefix.$file"
+        dumpfile="$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$file"
         util::echo info "downloading backup to $dumpfile ..."
         echo
         terminus backup:get --file="$file" --to="$dumpfile" \
@@ -230,7 +251,7 @@ pull-drupal() {
             '')
                 ;;
             *)
-                dumpfile="$backup_dir/$backup_prefix.$file"
+                dumpfile="$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$file"
                 util::echo info "downloading $file to $dumpfile ..."
                 echo
                 terminus backup:get --file="$file" --to="$dumpfile" "$pantheon_project.$src_env"
@@ -247,21 +268,11 @@ pull-drupal() {
     pv "$dumpfile" | gunzip -c | mysql-pipe
 }
 
-fix-volume-perms() {
-    local cmds
-    # pantheon private dir is in public dir, ensure it exists.
-    cmds='mkdir -p /var/www_files/public/private;'
-    # ensure files dirs writable by webserver.
-    cmds+='chgrp -R www-data /var/www_files/public;'
-    cmds+='chmod -R g+w /var/www_files/public;'
-    docker-compose exec $php_container /bin/bash -c "$cmds"
-}
-
 configure-drupal() {
     local update
     update=$1
 
-    fix-volume-perms
+    ensure_perms
 
     # drush cc drush
     drush rr
@@ -317,7 +328,7 @@ pull-files-drupal() {
 
     local src container_id jq
     src="$src_env.$pantheon_project_id@appserver.$src_env.$pantheon_project_id.drush.in:files"
-    container_id=$(docker-compose ps -q $php_container)
+    container_id=$(docker-compose ps -q $LDEV_PHP_CONTAINER)
     jq='.[0].Mounts[] | select(.Destination == "/var/www_files/public") | .Source'
 
     # Private inside public files.
@@ -346,12 +357,11 @@ pull-files-drupal() {
             ;;
     esac
 
-    fix-volume-perms
+    ensure_perms
 }
 
-if [[ ! -d "$backup_dir" ]]; then
-    mkdir -p "$backup_dir"
-fi
+# for docker cmds
+cd "$LDEV_PROJ_DIR"
 
 echo
 

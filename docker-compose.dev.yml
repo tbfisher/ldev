@@ -28,7 +28,7 @@ services:
 
   php:
     environment:
-      PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
+      PHP_IDE_CONFIG: "serverName=${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}"
     ports:
       - '9000'
     volumes:
