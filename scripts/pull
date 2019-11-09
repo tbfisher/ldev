@@ -18,25 +18,27 @@ pwd_dir=$(pwd)
 # git/project root directory
 proj_dir=$(util::realpath "$script_dir/..")
 
-# @todo ?
+# shell window dims for fitting container output to host.
 export COLUMNS=80
 export LINES=32
 
-# Include docker-compose env.
+# Include ldev env.
 # shellcheck source=env
 source "$script_dir/env"
 
+# default env key to pull from.
 default_env=dev
+# e.g. drush "@$drush_alias_prefix.$default_env"
 drush_alias_prefix=example8
+# local path to drupal root
 drupal_root="$proj_dir/code/example8/web"
+# drupal multisite key, e.g. "$drupal_root/sites/$drupal_multisite_id"
 drupal_multisite_id=default
+# stage_file_proxy origin, if blank will use uri from drush alias
 drupal_stage_file_proxy_origin=
 php_container=php
 backup_dir="$PULL_CACHEDIR"
 backup_prefix="$PULL_PREFIX"
-
-# for docker cmds
-cd "$proj_dir"
 
 usage() {
     cat << EOF
@@ -142,6 +144,19 @@ ensure_drush_alias() {
     echo
 }
 
+fix-volume-perms() {
+    local cmds
+    # ensure files dirs writable by webserver.
+    cmds+="mkdir -p /var/www_files/{public,private}/$drupal_multisite_id;"
+    cmds+='chgrp -R www-data /var/www_files/public /var/www_files/private;'
+    cmds+='chmod -R g+w /var/www_files/public /var/www_files/private;'
+    # ensure config dirs writable by webserver.
+    cmds+='mkdir -p /var/www/config-local;'
+    cmds+='chgrp -R www-data /var/www/config /var/www/config-local;'
+    cmds+='chmod -R g+w /var/www/config /var/www/config-local;'
+    docker-compose exec $php_container /bin/bash -c "$cmds"
+}
+
 list() {
     local src_envs
     src_envs=$(drush-local sa --fields=name --format=list | grep "$pantheon_project" | grep -v '\*')
@@ -187,19 +202,6 @@ pull-drupal() {
     util::echo info "importing..."
     echo
     pv "$dumpfile" | gunzip -c | mysql-pipe
-}
-
-fix-volume-perms() {
-    local cmds
-    # ensure files dirs writable by webserver.
-    cmds+="mkdir -p /var/www_files/{public,private}/$drupal_multisite_id;"
-    cmds+='chgrp -R www-data /var/www_files/public /var/www_files/private;'
-    cmds+='chmod -R g+w /var/www_files/public /var/www_files/private;'
-    # ensure config dirs writable by webserver.
-    cmds+='mkdir -p /var/www/config-local;'
-    cmds+='chgrp -R www-data /var/www/config /var/www/config-local;'
-    cmds+='chmod -R g+w /var/www/config /var/www/config-local;'
-    docker-compose exec $php_container /bin/bash -c "$cmds"
 }
 
 configure-drupal() {
@@ -292,6 +294,9 @@ pull-files-drupal() {
 
     fix-volume-perms
 }
+
+# for docker cmds
+cd "$proj_dir"
 
 if [[ ! -d "$backup_dir" ]]; then
     mkdir -p "$backup_dir"

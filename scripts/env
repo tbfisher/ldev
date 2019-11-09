@@ -22,19 +22,29 @@ fi
 # shellcheck disable=SC1090
 source "$proj_dir/.env"
 
+# PHP container, for running drush commands, etc.
 php_container=php
+# Path to drush in container.
 php_ide_config="serverName=$PRIMARY_DOMAIN.$BASE_DOMAIN"
+# path to drush on host.
 drush_container=/var/www/vendor/bin/drush
+# path to drush on host.
 drush_local=$proj_dir/code/example8/vendor/bin/drush
+# Drush --uri value.
 drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
+# path to drupal console in container.
 drupal_console_container=../vendor/bin/drupal
+# path to phpunit in container.
 drupal_phpunit_container=../vendor/bin/phpunit
+# path to phpunit conf in container.
 drupal_phpunit_conf_container=core/phpunit.xml.dist
-webserver_container=web
+# Database container.
 mysql_container=db
+# Database creds.
 mysql_user=root
 mysql_pass=$DATABASE_PASSWORD
 mysql_db=$DATABASE_NAME
+# ldev scripts
 build_script="$script_dir/build"
 pull_script="$script_dir/pull"
 xdebug_script="$script_dir/xdebug"
