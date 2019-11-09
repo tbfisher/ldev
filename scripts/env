@@ -3,139 +3,140 @@
 # Sets up bash environment.
 
 # Gets the directory containing this file.
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+LDEV_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# absolute path to this script
+# shellcheck disable=2034
+LDEV_ENV_SCRIPT="$LDEV_SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
 
 # shellcheck source=inc/util.sh
-source "$script_dir/inc/util.sh"
+source "$LDEV_SCRIPT_DIR/inc/util.sh"
 # shellcheck source=inc/docker.sh
-source "$script_dir/inc/docker.sh"
+source "$LDEV_SCRIPT_DIR/inc/docker.sh"
 
-# current directory
-pwd_dir=$(pwd)
-# git/project root directory
-proj_dir=$(util::realpath "$script_dir/..")
+# ldev root directory
+LDEV_PROJ_DIR=$(util::realpath "$LDEV_SCRIPT_DIR/..")
 
 # Include docker-compose env, creating if necessary.
-if [[ ! -f $proj_dir/.env ]]; then
-    cp "$proj_dir/env_example" "$proj_dir/.env"
+if [[ ! -f $LDEV_PROJ_DIR/.env ]]; then
+    cp "$LDEV_PROJ_DIR/env_example" "$LDEV_PROJ_DIR/.env"
 fi
 # shellcheck disable=SC1090
-source "$proj_dir/.env"
+source "$LDEV_PROJ_DIR/.env"
+
+# ldev scripts
+LDEV_BUILD_SCRIPT="$LDEV_SCRIPT_DIR/$LDEV_BUILD_SCRIPT_BASENAME"
+LDEV_PULL_SCRIPT="$LDEV_SCRIPT_DIR/$LDEV_PULL_SCRIPT_BASENAME"
+LDEV_XDEBUG_SCRIPT="$LDEV_SCRIPT_DIR/$LDEV_XDEBUG_SCRIPT_BASENAME"
 
 # PHP container, for running drush commands, etc.
-php_container=php
+LDEV_PHP_CONTAINER=php
 # Path to drush in container.
-php_ide_config="serverName=$PRIMARY_DOMAIN.$BASE_DOMAIN"
+LDEV_DRUSH_CONTAINER=/var/www/drush/drush
 # path to drush on host.
-drush_container=/var/www/drush/drush
-# path to drush on host.
-drush_local=$proj_dir/code/drush/drush
+LDEV_DRUSH_LOCAL=$LDEV_PROJ_DIR/code/drush/drush
 # Drush --uri value.
-drush_uri="https://$PRIMARY_DOMAIN.$BASE_DOMAIN"
+LDEV_DRUSH_URI="https://$LDEV_PRIMARY_DOMAIN.$LDEV_BASE_DOMAIN"
 # Database container.
-mysql_container=db
+LDEV_MYSQL_CONTAINER=db
 # Database creds.
-mysql_user=root
-mysql_pass=$DATABASE_PASSWORD
-mysql_db=$DATABASE_NAME
-# ldev scripts
-build_script="$script_dir/build"
-pull_script="$script_dir/pull"
-xdebug_script="$script_dir/xdebug"
+LDEV_MYSQL_USER=root
+LDEV_MYSQL_PASS=$LDEV_DATABASE_PASSWORD
+LDEV_MYSQL_DB=$LDEV_DATABASE_NAME
 
 # drush as webserver user
 drush() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -it \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
         --user www-data:www-data \
-        "$(docker-compose ps -q $php_container)" \
-        $drush_container --uri="$drush_uri" "$@"
+        "$(docker-compose ps -q $LDEV_PHP_CONTAINER)" \
+        $LDEV_DRUSH_CONTAINER --uri="$LDEV_DRUSH_URI" "$@"
     )
 }
 # drush as webserver user, with remote debugging
 drush-debug() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -it \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
         --env "XDEBUG_CONFIG=remote_enable=1" \
-        --env "PHP_IDE_CONFIG=$php_ide_config" \
+        --env "PHP_IDE_CONFIG=serverName=$LDEV_PRIMARY_DOMAIN.$LDEV_BASE_DOMAIN" \
         --user www-data:www-data \
-        "$(docker-compose ps -q $php_container)" \
-        $drush_container --uri="$drush_uri" "$@"
+        "$(docker-compose ps -q $LDEV_PHP_CONTAINER)" \
+        $LDEV_DRUSH_CONTAINER --uri="$LDEV_DRUSH_URI" "$@"
     )
 }
 # drush as webserver user, with profiling
 drush-profile() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -it \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
         --env "XDEBUG_CONFIG=profiler_enable=1" \
         --user www-data:www-data \
-        "$(docker-compose ps -q $php_container)" \
-        $drush_container --uri="$drush_uri" "$@"
+        "$(docker-compose ps -q $LDEV_PHP_CONTAINER)" \
+        $LDEV_DRUSH_CONTAINER --uri="$LDEV_DRUSH_URI" "$@"
     )
 }
 # drush as root user (in case you want drush to write code)
 drush-root() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -it \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
         --user root:www-data \
-        "$(docker-compose ps -q $php_container)" \
-        $drush_container --uri="$drush_uri" "$@"
+        "$(docker-compose ps -q $LDEV_PHP_CONTAINER)" \
+        $LDEV_DRUSH_CONTAINER --uri="$LDEV_DRUSH_URI" "$@"
     )
 }
 
 # since we've aliased `drush`, provide a way to run drush on host
 drush-local() {
-    $drush_local "$@"
+    $LDEV_DRUSH_LOCAL "$@"
 }
 
 # interactive mysql in db container
 mysql() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -it \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
-        "$(docker-compose ps -q $mysql_container)" \
-        mysql --user=$mysql_user --password="$mysql_pass" "$mysql_db" "$@"
+        "$(docker-compose ps -q $LDEV_MYSQL_CONTAINER)" \
+        mysql --user=$LDEV_MYSQL_USER --password="$LDEV_MYSQL_PASS" "$LDEV_MYSQL_DB" "$@"
     )
 }
 # non-interative, for piping e.g. `cat some.sql | mysql-pipe`
 mysql-pipe() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -i \
-        "$(docker-compose ps -q $mysql_container)" \
-        mysql --user=$mysql_user --password="$mysql_pass" "$mysql_db"
+        "$(docker-compose ps -q $LDEV_MYSQL_CONTAINER)" \
+        mysql --user=$LDEV_MYSQL_USER --password="$LDEV_MYSQL_PASS" "$LDEV_MYSQL_DB"
     )
 }
 # non-interative mysql-dump
 mysqldump() {
     (
-    cd "$proj_dir" &&
+    cd "$LDEV_PROJ_DIR" &&
     docker exec -i \
-        "$(docker-compose ps -q $mysql_container)" \
-        mysqldump --user=$mysql_user --password="$mysql_pass" "$mysql_db"
+        "$(docker-compose ps -q $LDEV_MYSQL_CONTAINER)" \
+        mysqldump --user=$LDEV_MYSQL_USER --password="$LDEV_MYSQL_PASS" "$LDEV_MYSQL_DB"
     )
 }
 
 # build script
 build() {
-    $build_script "$@"
+    $LDEV_BUILD_SCRIPT "$@"
 }
 
 # pull script
 pull() {
-    $pull_script "$@"
+    $LDEV_PULL_SCRIPT "$@"
 }
 
 # enable/disable xdebug in a php-fpm container
 xdebug() {
-    $xdebug_script "$@"
+    export LDEV_ENV_SCRIPT
+    $LDEV_XDEBUG_SCRIPT "$@"
 }

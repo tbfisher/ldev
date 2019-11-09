@@ -21,7 +21,7 @@ services:
     labels:
       - 'traefik.backend=webgrind'
       - 'traefik.port=8080'
-      - 'traefik.frontend.rule=Host:webgrind.${BASE_DOMAIN}'
+      - 'traefik.frontend.rule=Host:webgrind.${LDEV_BASE_DOMAIN}'
       - 'traefik.frontend.entryPoints=http'
 
 volumes:
