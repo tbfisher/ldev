@@ -1,21 +1,22 @@
 # Here you can cutomize your variables.
 
-COMPOSE_PROJECT_NAME=example7
-
-# ENV
-ENVIRONMENT=local
-PRIMARY_DOMAIN=example7
-BASE_DOMAIN=localhost
-
-# drupal
-DATABASE_NAME=drupal
-DATABASE_USER=drupal
-DATABASE_PASSWORD=drupal
-
 # docker compose
+COMPOSE_PROJECT_NAME=example7
 COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml:docker-compose.dev.proxy.yml
 # with profiling
 #COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml:docker-compose.dev.proxy.yml:docker-compose.dev.profile.yml
+
+# Environment key, e.g prod, stage, local.
+ENVIRONMENT=local
+
+# e.g. "https://www.$primary_domain.$base_domain/"
+PRIMARY_DOMAIN=example7
+BASE_DOMAIN=localhost
+
+# database creds
+DATABASE_NAME=drupal
+DATABASE_USER=drupal
+DATABASE_PASSWORD=drupal
 
 # Pull script
 # A place for database dumps.
