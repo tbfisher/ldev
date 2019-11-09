@@ -284,24 +284,24 @@ configure-drupal() {
         drush -y updb
     fi
 
-    drush -y pmu \
-        new_relic_rpm \
-        pantheon_apachesolr \
-        pantheon_api \
-        pantheon_login
+    #drush -y pmu \
+    #    new_relic_rpm \
+    #    pantheon_apachesolr \
+    #    pantheon_api \
+    #    pantheon_login
     drush -y en \
         devel \
         stage_file_proxy
 
-    set +e
-    drush -y csim local
-    set -e
+    #set +e
+    #drush -y csim local
+    #set -e
 
     # stage_file_proxy
     drush -y cset stage_file_proxy.settings origin "http://$src_env-$pantheon_project.pantheonsite.io"
 
-    drush user-unblock 1
-    drush uli 1 admin/reports/status
+    drush user:unblock admin
+    drush user:login --uid=1 admin/reports/status
 }
 
 pull-files-drupal() {
