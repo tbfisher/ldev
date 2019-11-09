@@ -7,10 +7,10 @@ services:
   db:
     build: ./images/drupal-mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
-      MYSQL_DATABASE: ${DATABASE_NAME}
-      MYSQL_USER: ${DATABASE_USER}
-      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${LDEV_DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${LDEV_DATABASE_NAME}
+      MYSQL_USER: ${LDEV_DATABASE_USER}
+      MYSQL_PASSWORD: ${LDEV_DATABASE_PASSWORD}
 
   #phpcache:
   #  build: ./images/redis
@@ -22,15 +22,15 @@ services:
     build: ./images/platformsh-php72
     environment:
       DB_HOST: db
-      DB_USER: ${DATABASE_USER}
-      DB_PASSWORD: ${DATABASE_PASSWORD}
-      DB_NAME: ${DATABASE_NAME}
+      DB_USER: ${LDEV_DATABASE_USER}
+      DB_PASSWORD: ${LDEV_DATABASE_PASSWORD}
+      DB_NAME: ${LDEV_DATABASE_NAME}
       DB_DRIVER: mysql
       CACHE_HOST: phpcache
       SEARCH_HOST: search
-      BASE_DOMAIN: ${BASE_DOMAIN}
-      PRIMARY_DOMAIN: ${PRIMARY_DOMAIN}
-      ENVIRONMENT: ${ENVIRONMENT}
+      BASE_DOMAIN: ${LDEV_BASE_DOMAIN}
+      PRIMARY_DOMAIN: ${LDEV_PRIMARY_DOMAIN}
+      ENVIRONMENT: ${LDEV_ENVIRONMENT}
 
   web:
     image: tbfisher/drupal-web:nginx-1.8-dev-1
