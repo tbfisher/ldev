@@ -13,23 +13,21 @@ source "$script_dir/inc/util.sh"
 
 # current directory
 pwd_dir=$(pwd)
-# git/project root directory
-proj_dir=$(util::realpath "$script_dir/..")
 
 # shell window dims for fitting container output to host.
-export COLUMNS=80
-export LINES=32
+if [ -z "${COLUMNS+x}" ]; then
+    export COLUMNS=80
+fi
+if [ -z "${LINES+x}" ]; then
+    export LINES=32
+fi
 
 # Include ldev env.
-if [ -z "${ENV_SCRIPT+x}" ]; then
-    ENV_SCRIPT=env
+if [ -z "${LDEV_ENV_SCRIPT+x}" ]; then
+    LDEV_ENV_SCRIPT="$script_dir/env"
 fi
 # shellcheck source=env
-source "$script_dir/$ENV_SCRIPT"
-
-if [ -z "${DEFAULT_PHP_CONTAINER+x}" ]; then
-    DEFAULT_PHP_CONTAINER=php
-fi
+source "$LDEV_ENV_SCRIPT"
 
 default_host_ip="$(docker::host-ip)"
 
@@ -41,7 +39,7 @@ Enable/disable Xdebug.
 
 ARGUMENTS:
     command   One of "en" to enable, or "dis" to disable, defaults to "en".
-    container The php container to enable xdebug in, defaults to "$DEFAULT_PHP_CONTAINER".
+    container The php container to enable xdebug in, defaults to "$LDEV_PHP_CONTAINER".
     host-ip   Host ip address (for Xdebug to connect to), defaults to "$default_host_ip".
 
 OPTIONS:
@@ -84,23 +82,24 @@ done
 shift "$((OPTIND-1))"
 # if $1 is unbound
 if [ -z "${1+x}" ]; then
-    comm=en
+    cmd=en
 else
     case "$1" in
         en)
-            comm='en'
+            cmd='en'
             ;;
         dis)
-            comm='dis'
+            cmd='dis'
             ;;
         :)
             util::echo error "Argument command \"$1\" not one of \"en\" or \"dis\"." >&2
+            usage
             exit 1
             ;;
     esac
 fi
 if [ -z "${2+x}" ]; then
-    php_container=$DEFAULT_PHP_CONTAINER
+    php_container=$LDEV_PHP_CONTAINER
 else
     php_container=$2
 fi
@@ -111,17 +110,18 @@ else
 fi
 
 # for docker cmds
-cd "$proj_dir"
+cd "$LDEV_PROJ_DIR"
 
-# container path to ini to write to
-ini_path=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+main() {
+    # container path to ini to write to
+    ini_path=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-# grab zend_extension=path/to/xdebug.so line (changes per php build)
-zend_extension=$(docker-compose exec "$php_container" /bin/bash -c "cat '$ini_path' | grep -m 1 'zend_extension=' | sed 's/^;//'")
+    # grab zend_extension=path/to/xdebug.so line (changes per php build)
+    zend_extension=$(docker-compose exec "$php_container" /bin/bash -c "cat '$ini_path' | grep -m 1 'zend_extension=' | sed 's/^;//'")
 
-# update ini
-if [[ $comm == 'en' ]]; then
-    ini_contents=$(cat << EOF
+    # update ini
+    if [[ $cmd == 'en' ]]; then
+        ini_contents=$(cat << EOF
 $zend_extension
 [xdebug]
 xdebug.remote_enable=1
@@ -131,20 +131,26 @@ xdebug.profiler_enable_trigger=1
 xdebug.profiler_output_dir=/tmp/webgrind
 EOF
 )
-else
-    ini_contents=$(cat << EOF
+    else
+        ini_contents=$(cat << EOF
 ;$zend_extension
 EOF
-)
+    )
+    fi
+    util::echo info "setting xdebug config on container $php_container to:"
+    util::echo info "------"
+    echo "$ini_contents"
+    util::echo info "------"
+    docker-compose exec "$php_container" /bin/bash -c "echo '$ini_contents' > '$ini_path'"
+    # restart php-fpm
+    util::echo info "restarting php-fpm..."
+    docker-compose exec "$php_container" /bin/bash -c 'kill -USR2 1'
+}
+
+if [[ ! -z "$cmd" ]]; then
+    echo
+    main
+    echo
 fi
-util::echo info "setting xdebug config on container $php_container to:"
-util::echo info "------"
-echo "$ini_contents"
-util::echo info "------"
-docker-compose exec "$php_container" /bin/bash -c "echo '$ini_contents' > '$ini_path'"
-# restart php-fpm
-util::echo info "restarting php-fpm..."
-docker-compose exec "$php_container" /bin/bash -c 'kill -USR2 1'
-util::echo info "done."
 
 cd "$pwd_dir"

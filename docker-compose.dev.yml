@@ -29,11 +29,11 @@ services:
   php:
     environment:
       # Xdebug
-      PHP_IDE_CONFIG: "serverName=${PRIMARY_DOMAIN}.${BASE_DOMAIN}"
+      PHP_IDE_CONFIG: "serverName=${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}"
       # Drupal tests
       PHP_ALLOW_URL_FOPEN: 'On'
       SIMPLETEST_BASE_URL: "http://web"
-      SIMPLETEST_DB: "mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@db/${DATABASE_NAME}"
+      SIMPLETEST_DB: "mysql://${LDEV_DATABASE_USER}:${LDEV_DATABASE_PASSWORD}@db/${LDEV_DATABASE_NAME}"
       BROWSERTEST_OUTPUT_DIRECTORY: /var/www/web/sites/simpletest/browser_output
       MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox", "--disable-dev-shm-usage"]}}, "http://chrome:9515"]'
     ports:

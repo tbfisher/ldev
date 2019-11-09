@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# Pull content from production or staging sites.
-
 # exit on error, unset vars
 set -eu
 # exit early for errors in pipelines
@@ -15,30 +13,32 @@ source "$script_dir/inc/util.sh"
 
 # current directory
 pwd_dir=$(pwd)
-# git/project root directory
-proj_dir=$(util::realpath "$script_dir/..")
 
 # shell window dims for fitting container output to host.
-export COLUMNS=80
-export LINES=32
+if [ -z "${COLUMNS+x}" ]; then
+    export COLUMNS=80
+fi
+if [ -z "${LINES+x}" ]; then
+    export LINES=32
+fi
 
 # Include ldev env.
+if [ -z "${LDEV_ENV_SCRIPT+x}" ]; then
+    LDEV_ENV_SCRIPT="$script_dir/env"
+fi
 # shellcheck source=env
-source "$script_dir/env"
+source "$LDEV_ENV_SCRIPT"
 
 # default env key to pull from.
 default_env=dev
 # e.g. drush "@$drush_alias_prefix.$default_env"
 drush_alias_prefix=example8
 # local path to drupal root
-drupal_root="$proj_dir/code/example8/web"
+drupal_root="$LDEV_PROJ_DIR/code/example8/web"
 # drupal multisite key, e.g. "$drupal_root/sites/$drupal_multisite_id"
 drupal_multisite_id=default
 # stage_file_proxy origin, if blank will use uri from drush alias
 drupal_stage_file_proxy_origin=
-php_container=php
-backup_dir="$PULL_CACHEDIR"
-backup_prefix="$PULL_PREFIX"
 
 usage() {
     cat << EOF
@@ -131,10 +131,16 @@ fi
 src=$drush_alias_prefix.$src_env
 
 # environment
-if [[ -f $proj_dir/code ]]; then
-    util::echo error "no code found at $proj_dir/code, did you run ./scripts/build?"
+if [[ -f $LDEV_PROJ_DIR/code ]]; then
+    util::echo error "no code found at $LDEV_PROJ_DIR/code, did you run ./scripts/build?"
     exit 1
 fi
+
+ensure_cache_dir() {
+    if [[ ! -d "$LDEV_PULL_CACHEDIR" ]]; then
+        mkdir -p "$LDEV_PULL_CACHEDIR"
+    fi
+}
 
 ensure_drush_alias() {
     # cause script to fail if alias undefined or non-functional
@@ -144,7 +150,7 @@ ensure_drush_alias() {
     echo
 }
 
-fix-volume-perms() {
+ensure_perms() {
     local cmds
     # ensure files dirs writable by webserver.
     cmds+="mkdir -p /var/www_files/{public,private}/$drupal_multisite_id;"
@@ -154,7 +160,7 @@ fix-volume-perms() {
     cmds+='mkdir -p /var/www/config-local;'
     cmds+='chgrp -R www-data /var/www/config /var/www/config-local;'
     cmds+='chmod -R g+w /var/www/config /var/www/config-local;'
-    docker-compose exec $php_container /bin/bash -c "$cmds"
+    docker-compose exec $LDEV_PHP_CONTAINER /bin/bash -c "$cmds"
 }
 
 list() {
@@ -168,15 +174,17 @@ list() {
     # ls will non-zero exit if pattern doesn't match
     set +e
     util::echo info "database dumps:"
-    ls -lh "$backup_dir/$backup_prefix.$drupal_multisite_id."*.sql.gz
+    ls -lh "$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$drupal_multisite_id."*.sql.gz
     echo
     set -e
 }
 
 backup-drupal() {
+    ensure_cache_dir
+
     local dumpfile dumpfile_size
-    dumpfile=$backup_dir/$backup_prefix.$drupal_multisite_id.local.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
-    dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.$drupal_multisite_id.local.*.sql.gz")
+    dumpfile=$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$drupal_multisite_id.local.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
+    dumpfile_size=$(util::filesize "$LDEV_PULL_CACHEDIR" "$LDEV_PULL_PREFIX.$drupal_multisite_id.local.*.sql.gz")
     drush sql-dump --structure-tables-list=cache,cache*,watchdog | \
         gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
     util::echo info "wrote to $dumpfile"
@@ -184,11 +192,12 @@ backup-drupal() {
 
 pull-drupal() {
     ensure_drush_alias
+    ensure_cache_dir
 
     local dumpfile dumpfile_size
     if [[ -z "$1" ]]; then
-        dumpfile=$backup_dir/$backup_prefix.$drupal_multisite_id.$src_env.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
-        dumpfile_size=$(util::filesize "$backup_dir" "$backup_prefix.$drupal_multisite_id.$src_env.*.sql.gz")
+        dumpfile=$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$drupal_multisite_id.$src_env.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
+        dumpfile_size=$(util::filesize "$LDEV_PULL_CACHEDIR" "$LDEV_PULL_PREFIX.$drupal_multisite_id.$src_env.*.sql.gz")
         drush-local "@$src" sql-dump --structure-tables-list=cache,cache*,watchdog | \
             gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
         util::echo info "wrote to $dumpfile"
@@ -213,7 +222,7 @@ configure-drupal() {
     local update
     update=$1
 
-    fix-volume-perms
+    ensure_perms
 
     drush cr
 
@@ -260,7 +269,7 @@ pull-files-drupal() {
 
     local rsync_src container_id
     rsync_src=$(echo "$src_alias" | jq -r '."remote-user" + "@" + ."remote-host"')
-    container_id=$(docker-compose ps -q $php_container)
+    container_id=$(docker-compose ps -q $LDEV_PHP_CONTAINER)
 
     local jq src dst
     case $1 in
@@ -292,15 +301,11 @@ pull-files-drupal() {
             ;;
     esac
 
-    fix-volume-perms
+    ensure_perms
 }
 
 # for docker cmds
-cd "$proj_dir"
-
-if [[ ! -d "$backup_dir" ]]; then
-    mkdir -p "$backup_dir"
-fi
+cd "$LDEV_PROJ_DIR"
 
 echo
 
