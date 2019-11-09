@@ -1,24 +1,31 @@
 # Here you can cutomize your variables.
 
+# docker compose -- https://docs.docker.com/compose/env-file/
 COMPOSE_PROJECT_NAME=example8
-
-# ENV
-ENVIRONMENT=local
-PRIMARY_DOMAIN=example8
-BASE_DOMAIN=localhost
-
-# drupal
-DATABASE_NAME=drupal
-DATABASE_USER=drupal
-DATABASE_PASSWORD=drupal
-
-# docker compose
 COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml:docker-compose.dev.proxy.yml
 # with profiling
 #COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml:docker-compose.dev.proxy.yml:docker-compose.dev.profile.yml
 
+# environment key, e.g. prod, stage, local.
+LDEV_ENVIRONMENT=local
+
+# e.g. "https://www.$LDEV_PRIMARY_DOMAIN.$LDEV_BASE_DOMAIN/"
+LDEV_PRIMARY_DOMAIN=example8
+LDEV_BASE_DOMAIN=localhost
+
+# database creds
+LDEV_DATABASE_NAME=drupal
+LDEV_DATABASE_USER=drupal
+LDEV_DATABASE_PASSWORD=drupal
+
+# ldev scripts go in scripts/. Feel free to add your own scripts for convenience
+# and as an example for others, e.g. pull_jane
+LDEV_BUILD_SCRIPT_BASENAME=build
+LDEV_PULL_SCRIPT_BASENAME=pull
+LDEV_XDEBUG_SCRIPT_BASENAME=xdebug
+
 # Pull script
 # A place for database dumps.
-PULL_CACHEDIR=/tmp
+LDEV_PULL_CACHEDIR=/tmp
 # Filename prefix for this project.
-PULL_PREFIX=example8
+LDEV_PULL_PREFIX=example8
