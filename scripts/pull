@@ -34,7 +34,7 @@ default_env=dev
 # pantheon project name
 pantheon_project=example8
 # pantheon project id
-pantheon_project_id=8c5c12cf-e8b4-4fff-8a59-34472c80dba7
+pantheon_project_id=aa220cfa-f0a4-4d49-a578-5aff16add5e9
 
 usage() {
     cat << EOF
