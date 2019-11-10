@@ -34,16 +34,16 @@ services:
     volumes:
       - "./code/example7/docroot:/var/www/web:cached"
       - "./code/drush:/var/www/drush:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
+      - "files_public:/var/www_files/public:delegated"
+      - "files_private:/var/www_files/private:delegated"
 
   web:
     ports:
       - '80'
     volumes:
       - "./code/example7/docroot:/var/www/web:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
+      - "files_public:/var/www_files/public:delegated"
+      - "files_private:/var/www_files/private:delegated"
 
   webproxy:
     build:
