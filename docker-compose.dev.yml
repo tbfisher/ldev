@@ -35,6 +35,7 @@ services:
       - "./code/example8:/var/www:cached"
       - "files_public:/var/www_files/public:rw"
       - "files_private:/var/www_files/private:rw"
+      - "composer_cache:/root/.composer/cache:delegated"
 
   web:
     ports:
@@ -63,4 +64,6 @@ volumes:
   files_public:
     driver: local
   files_private:
+    driver: local
+  composer_cache:
     driver: local
