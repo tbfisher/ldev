@@ -33,8 +33,8 @@ services:
       - '9000'
     volumes:
       - "./code/example8:/var/www/web:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
+      - "files_public:/var/www_files/public:delegated"
+      - "files_private:/var/www_files/private:delegated"
       - "composer_cache:/root/.composer/cache:delegated"
 
   web:
@@ -42,8 +42,8 @@ services:
       - '80'
     volumes:
       - "./code/example8:/var/www/web:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
+      - "files_public:/var/www_files/public:delegated"
+      - "files_private:/var/www_files/private:delegated"
 
   mail:
     image: mailhog/mailhog
