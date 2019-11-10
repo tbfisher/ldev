@@ -33,16 +33,16 @@ services:
       - '9000'
     volumes:
       - "./code/example7:/var/www:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
+      - "files_public:/var/www_files/public:delegated"
+      - "files_private:/var/www_files/private:delegated"
 
   web:
     ports:
       - '80'
     volumes:
       - "./code/example7:/var/www:cached"
-      - "files_public:/var/www_files/public:rw"
-      - "files_private:/var/www_files/private:rw"
+      - "files_public:/var/www_files/public:delegated"
+      - "files_private:/var/www_files/private:delegated"
 
   webproxy:
     build:
