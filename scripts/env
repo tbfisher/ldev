@@ -36,6 +36,8 @@ LDEV_DRUSH_CONTAINER=/var/www/vendor/bin/drush
 LDEV_DRUSH_LOCAL=$LDEV_PROJ_DIR/code/example8/vendor/bin/drush
 # Drush --uri value.
 LDEV_DRUSH_URI="https://$LDEV_PRIMARY_DOMAIN.$LDEV_BASE_DOMAIN"
+# path to drupal composer root (containing composer.json) in container.
+LDEV_DRUPAL_COMPOSER_ROOT_CONTAINER=/var/www
 # Database container.
 LDEV_MYSQL_CONTAINER=db
 # Database creds.
@@ -99,12 +101,12 @@ drush-local() {
 # composer
 composer() {
     (
-    cd "$proj_dir" && \
+    cd "$LDEV_PROJ_DIR" && \
     docker exec -it \
-        --workdir /var/www \
+        --workdir "$LDEV_DRUPAL_COMPOSER_ROOT_CONTAINER" \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
         --user root:www-data \
-        "$(docker-compose ps -q $php_container)" \
+        "$(docker-compose ps -q $LDEV_PHP_CONTAINER)" \
         composer "$@"
     )
 }
