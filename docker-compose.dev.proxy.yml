@@ -20,11 +20,11 @@ services:
   web:
     labels:
       - 'traefik.enable=true'
-      - "traefik.http.routers.webproxy.entrypoints=web"
-      - 'traefik.http.routers.webproxy.rule=HostRegexp(`${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`, `{subdomain:[a-z0-9]+}.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`)'
-      - "traefik.http.routers.webproxysecure.entrypoints=websecure"
-      - 'traefik.http.routers.webproxysecure.rule=HostRegexp(`${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`, `{subdomain:[a-z0-9]+}.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`)'
-      - 'traefik.http.routers.webproxysecure.tls=true'
+      - "traefik.http.routers.web.entrypoints=web"
+      - 'traefik.http.routers.web.rule=HostRegexp(`${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`, `{subdomain:[a-z0-9]+}.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`)'
+      - "traefik.http.routers.websecure.entrypoints=websecure"
+      - 'traefik.http.routers.websecure.rule=HostRegexp(`${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`, `{subdomain:[a-z0-9]+}.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`)'
+      - 'traefik.http.routers.websecure.tls=true'
 
   mail:
     labels:
