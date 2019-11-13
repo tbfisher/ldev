@@ -36,8 +36,17 @@ LDEV_DRUSH_CONTAINER=/var/www/drush/drush
 LDEV_DRUSH_LOCAL=$LDEV_PROJ_DIR/code/drush/drush
 # Drush --uri value.
 LDEV_DRUSH_URI="https://$LDEV_PRIMARY_DOMAIN.$LDEV_BASE_DOMAIN"
+# path to drupal conf on host.
+# shellcheck disable=2034
+LDEV_DRUPAL_CONF="conf/drupal"
 # path to drupal composer root (containing composer.json) in container.
-LDEV_DRUPAL_COMPOSER_ROOT_CONTAINER=/var/www
+LDEV_DRUPAL_COMPOSER_ROOT_CONTAINER=/var/www/web
+# path to drupal root (containing index.php) on host.
+# shellcheck disable=2034
+LDEV_DRUPAL_ROOT_LOCAL="$LDEV_PROJ_DIR/code/drupal"
+# drupal multisite key, e.g. "$LDEV_DRUPAL_ROOT_LOCAL/sites/$LDEV_DRUPAL_MULTISITE_ID"
+# shellcheck disable=2034
+LDEV_DRUPAL_MULTISITE_ID=default
 # Database container.
 LDEV_MYSQL_CONTAINER=db
 # Database creds.
