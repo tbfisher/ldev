@@ -6,9 +6,10 @@ services:
 
   search:
     labels:
-      - 'traefik.port=8983'
-      - 'traefik.frontend.rule=Host:search.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http'
+      - 'traefik.enable=true'
+      - "traefik.http.routers.search.entrypoints=web"
+      - 'traefik.http.routers.search.rule=Host(`search.${LDEV_BASE_DOMAIN}`)'
+      - 'traefik.http.services.search.loadbalancer.server.port=8983'
 
   php:
     links:
@@ -18,31 +19,33 @@ services:
 
   web:
     labels:
-      - 'traefik.port=80'
-      - 'traefik.frontend.rule=Host:www.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN},${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http,https'
+      - 'traefik.enable=true'
+      - "traefik.http.routers.webproxy.entrypoints=web"
+      - 'traefik.http.routers.webproxy.rule=HostRegexp(`${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`, `{subdomain:[a-z0-9]+}.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`)'
+      - "traefik.http.routers.webproxysecure.entrypoints=websecure"
+      - 'traefik.http.routers.webproxysecure.rule=HostRegexp(`${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`, `{subdomain:[a-z0-9]+}.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}`)'
+      - 'traefik.http.routers.webproxysecure.tls=true'
 
   mail:
     labels:
-      - 'traefik.port=8025'
-      - 'traefik.frontend.rule=Host:mail.${LDEV_BASE_DOMAIN}'
-      - 'traefik.frontend.entryPoints=http'
+      - 'traefik.enable=true'
+      - "traefik.http.routers.mail.entrypoints=web"
+      - 'traefik.http.routers.mail.rule=Host(`mail.${LDEV_BASE_DOMAIN}`)'
+      - 'traefik.http.services.mail.loadbalancer.server.port=8025'
 
   proxy:
-    image: traefik:1.7
+    image: traefik:v2.0
     container_name: proxy
     ports:
       - '8080:8080'
       - '80:80'
       - '443:443'
-    command: |
-      -c /dev/null \
-      --api \
-      --docker \
-      --logLevel=DEBUG \
-      --accessLog \
-      --entryPoints="Name:https Address::443 TLS:/certs/ssl-cert-snakeoil.crt,/certs/ssl-cert-snakeoil.key" \
-      --entryPoints="Name:http Address::80"
+    command:
+      - '--log.level=DEBUG'
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - './conf/traefik/certs:/certs'
