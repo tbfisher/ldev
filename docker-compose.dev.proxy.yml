@@ -15,7 +15,7 @@ services:
     links:
       - 'proxy:${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
       - 'proxy:www.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
-      - 'search:search.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
+      - 'search:search.${LDEV_BASE_DOMAIN}'
 
   webproxy:
     labels:
