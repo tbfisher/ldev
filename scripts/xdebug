@@ -33,7 +33,7 @@ default_host_ip="$(docker::host-ip)"
 
 usage() {
     cat << EOF
-usage: $0 [options] [src-key]
+usage: $0 [options] [command] [container] [host-ip]
 
 Enable/disable Xdebug.
 
