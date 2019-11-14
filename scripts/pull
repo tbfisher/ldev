@@ -46,7 +46,8 @@ ARGUMENTS:
     src-key   Environment key. Defaults to "$default_env".
 
 OPTIONS:
-    -l        Update pantheon drush aliases and list available src-key values and existing local dumpfiles.
+    -l        List available src-key values and existing local dumpfiles.
+    -L        Same as -l but update pantheon drush aliases.
     -b        Backup local database.
     -c        Configure drupal for local development.
     -u        Run database updates after importing the database, and before any configuration.
@@ -173,7 +174,7 @@ ensure_perms() {
 
 list() {
     # for terminus
-    if [[ -z "$list_refresh" ]]; then
+    if [[ ! -z "$list_refresh" ]]; then
         terminus aliases
     fi
 
