@@ -198,7 +198,8 @@ pull-drupal() {
     if [[ -z "$1" ]]; then
         dumpfile=$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$drupal_multisite_id.$src_env.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
         dumpfile_size=$(util::filesize "$LDEV_PULL_CACHEDIR" "$LDEV_PULL_PREFIX.$drupal_multisite_id.$src_env.*.sql.gz")
-        drush-local "@$src" sql-dump --structure-tables-list=cache,cache*,watchdog | \
+        # -Dssh.tty=0 see https://github.com/drush-ops/drush/issues/4004
+        drush-local "@$src" -Dssh.tty=0 sql-dump --structure-tables-list=cache,cache*,watchdog | \
             gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
         util::echo info "wrote to $dumpfile"
     else
