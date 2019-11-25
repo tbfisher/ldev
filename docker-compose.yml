@@ -37,6 +37,7 @@ services:
       BASE_DOMAIN: ${LDEV_BASE_DOMAIN}
       PRIMARY_DOMAIN: ${LDEV_PRIMARY_DOMAIN}
       ENVIRONMENT: ${LDEV_ENVIRONMENT}
+      PHP_ALLOW_URL_FOPEN: 'On'
 
   web:
     image: tbfisher/drupal-web:nginx-1.16-dev-1
