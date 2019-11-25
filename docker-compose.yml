@@ -5,7 +5,7 @@ version: "3"
 services:
 
   db:
-    build: ./images/drupal-mariadb
+    build: ./images/acquia-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${LDEV_DATABASE_PASSWORD}
       MYSQL_DATABASE: ${LDEV_DATABASE_NAME}

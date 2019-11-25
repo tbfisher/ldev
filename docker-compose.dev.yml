@@ -14,11 +14,11 @@ services:
     volumes:
       - "db_data:/var/lib/mysql"
 
-  phpcache:
-    sysctls:
-      net.core.somaxconn: 65535
-    ports:
-      - '6379'
+  #phpcache:
+  #  sysctls:
+  #    net.core.somaxconn: 65535
+  #  ports:
+  #    - '6379'
 
   #search:
   #  ports:

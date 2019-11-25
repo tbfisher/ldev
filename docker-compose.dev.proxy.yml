@@ -4,18 +4,18 @@ version: '3'
 
 services:
 
-  search:
-    labels:
-      - 'traefik.enable=true'
-      - "traefik.http.routers.search.entrypoints=web"
-      - 'traefik.http.routers.search.rule=Host(`search.${LDEV_BASE_DOMAIN}`)'
-      - 'traefik.http.services.search.loadbalancer.server.port=8983'
+  #search:
+  #  labels:
+  #    - 'traefik.enable=true'
+  #    - "traefik.http.routers.search.entrypoints=web"
+  #    - 'traefik.http.routers.search.rule=Host(`search.${LDEV_BASE_DOMAIN}`)'
+  #    - 'traefik.http.services.search.loadbalancer.server.port=8983'
 
   php:
     links:
       - 'proxy:${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
       - 'proxy:www.${LDEV_PRIMARY_DOMAIN}.${LDEV_BASE_DOMAIN}'
-      - 'search:search.${LDEV_BASE_DOMAIN}'
+  #    - 'search:search.${LDEV_BASE_DOMAIN}'
 
   webproxy:
     labels:
