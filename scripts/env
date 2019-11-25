@@ -110,12 +110,12 @@ drush-local() {
 # composer
 composer() {
     (
-    cd "$proj_dir" && \
+    cd "$LDEV_PROJ_DIR" && \
     docker exec -it \
         --workdir "$LDEV_DRUPAL_COMPOSER_ROOT_CONTAINER" \
         --env COLUMNS=$COLUMNS --env LINES=$LINES \
         --user root:www-data \
-        "$(docker-compose ps -q $php_container)" \
+        "$(docker-compose ps -q $LDEV_PHP_CONTAINER)" \
         composer "$@"
     )
 }
