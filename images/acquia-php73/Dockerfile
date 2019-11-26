@@ -1,4 +1,4 @@
-FROM tbfisher/drupal-php:7.3-dev-2
+FROM tbfisher/drupal-php:7.3-dev-5
 
 # Change docroot
 RUN mkdir -p /var/www/docroot

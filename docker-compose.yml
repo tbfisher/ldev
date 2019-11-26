@@ -19,7 +19,7 @@ services:
   #  image: guywithnose/solr:3.6.2
 
   php:
-    image: tbfisher/drupal-php:7.3-dev-5
+    build: ./images/acquia-php73
     environment:
       DB_HOST: db
       DB_USER: ${LDEV_DATABASE_USER}
