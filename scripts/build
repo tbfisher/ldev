@@ -127,7 +127,7 @@ EOS
     echo "$php" >> $build_path/sites/default/settings.php
 fi
 util::echo info "configuring drupal"
-chmod +w $build_path/sites/default
+chmod 777 $build_path/sites/default
 rm -rf $build_path/sites/default/settings.local.php
 cp $conf_path/sites/default/settings.local.php $build_path/sites/default/
 # map files directories to volumes so they survive container destruction.
@@ -135,6 +135,6 @@ cp $conf_path/sites/default/settings.local.php $build_path/sites/default/
 rm -rf $build_path/sites/default/files
 ln -sf /var/www_files/public $build_path/sites/default/files
 # ln -sf /var/www_files/private $build_path/sites/default/private
-chmod -w $build_path/sites/default
+chmod 555 $build_path/sites/default
 
 cd "$pwd_dir"
