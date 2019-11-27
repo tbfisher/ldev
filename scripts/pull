@@ -144,7 +144,7 @@ ensure_cache_dir() {
 
 ensure_drush_alias() {
     # cause script to fail if alias undefined or non-functional
-    src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
+    src_alias=$(drush-local -Dssh.tty=0 sa "@$src" --format=json | jq '.["@'"$src"'"]')
     util::echo info "source alias:"
     echo "$src_alias" | jq
     echo
@@ -165,7 +165,7 @@ ensure_perms() {
 
 list() {
     local src_envs
-    src_envs=$(drush-local sa | grep -E "^@$drush_alias_prefix.[^.]+$" | sed "s/@$drush_alias_prefix\.//g")
+    src_envs=$(drush-local -Dssh.tty=0 sa | grep -E "^@$drush_alias_prefix.[^.]+$" | sed "s/@$drush_alias_prefix\.//g")
 
     util::echo info "src-alias values:"
     echo "$src_envs"
@@ -198,7 +198,8 @@ pull-drupal() {
     if [[ -z "$1" ]]; then
         dumpfile=$LDEV_PULL_CACHEDIR/$LDEV_PULL_PREFIX.$drupal_multisite_id.$src_env.$(date -u +"%Y-%m-%dT%H:%M:%SZ").sql.gz
         dumpfile_size=$(util::filesize "$LDEV_PULL_CACHEDIR" "$LDEV_PULL_PREFIX.$drupal_multisite_id.$src_env.*.sql.gz")
-        drush-local "@$src" sql-dump --structure-tables-list=cache,cache*,watchdog | \
+        # -Dssh.tty=0 see https://github.com/drush-ops/drush/issues/4004
+        drush-local -Dssh.tty=0 "@$src" sql-dump --structure-tables-list=cache,cache*,watchdog | \
             gzip -c | pv -s "$dumpfile_size" > "$dumpfile"
         util::echo info "wrote to $dumpfile"
     else
@@ -244,15 +245,17 @@ configure-drupal() {
     # stage_file_proxy
     if [[ -z "$drupal_stage_file_proxy_origin" ]]; then
         # uri from status
-        origin=$(drush-local "@$src" --format=json status | jq -re '.uri')
+        origin=$(drush-local -Dssh.tty=0 "@$src" --format=json status | jq -re '.uri')
         # uri from alias
-        #origin=$(drush-local sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
+        #origin=$(drush-local -Dssh.tty=0 sa "@$src" --format=json | jq -re ".[\"$src\"].uri")
         drush -y cset stage_file_proxy.settings origin "$origin"
     else
         drush -y cset stage_file_proxy.settings origin "$drupal_stage_file_proxy_origin"
     fi
 
-    drush user-unblock admin
+    #drupal -n init --destination=/root/.console
+
+    drush user:unblock admin
     drush uli --uid=1 admin/reports/status
 }
 
@@ -263,7 +266,7 @@ pull-files-drupal() {
     ssh_id=~/.ssh/id_rsa
 
     local status
-    status=$(drush-local "@$src" --format=json status)
+    status=$(drush-local -Dssh.tty=0 "@$src" --format=json status)
 
     local rsync_src container_id
     rsync_src=$(echo "$src_alias" | jq -r '."remote-user" + "@" + ."remote-host"')
