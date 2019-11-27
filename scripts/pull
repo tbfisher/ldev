@@ -269,14 +269,15 @@ pull-files-drupal() {
     status=$(drush-local -Dssh.tty=0 "@$src" --format=json status)
 
     local rsync_src container_id
-    rsync_src=$(echo "$src_alias" | jq -r '."remote-user" + "@" + ."remote-host"')
+    rsync_src=$(echo "$src_alias" | jq -r '."user" + "@" + ."host"')
     container_id=$(docker-compose ps -q $LDEV_PHP_CONTAINER)
 
-    local jq src dst
+    local jq src dst root public private
     case $1 in
         public)
-            src="$rsync_src:$(echo "$status" | \
-                jq -r '."%paths"."%root" + "/" + ."%paths"."%files"')"
+            root="$(echo "$status" | jq -r '.root')"
+            public="$(echo "$status" | jq -r '.files')"
+            src="$rsync_src:$root/$public"
             jq='.[0].Mounts[] | select(.Destination == "/var/www_files/public") | .Source'
             dst=$(docker inspect "$container_id" | jq -r "$jq")
             util::echo alert "Attempting rsync to container volume via sudo:"
@@ -290,7 +291,12 @@ pull-files-drupal() {
                 "$dst"
             ;;
         private)
-            src="$rsync_src:$(echo "$status" | jq -r '."%paths"."%private"')"
+            private="$(echo "$status" | jq -r '.private')"
+            if [[ "$private" == 'null' ]]; then
+                util::echo alert "No private files path configured on source."
+                exit
+            fi
+            src="$rsync_src:$private"
             jq='.[0].Mounts[] | select(.Destination == "/var/www_files/private") | .Source'
             dst=$(docker inspect "$container_id" | jq -r "$jq")
             util::echo alert "Attempting rsync to container volume via sudo:"
