@@ -152,7 +152,7 @@ ensure_cache_dir() {
 
 ensure_drush_alias() {
     # cause script to fail if alias undefined or non-functional
-    src_alias=$(drush-local sa "@$src" --format=json | jq '.["'"$src"'"]')
+    src_alias=$(drush-local -Dssh.tty=0 sa "@$src" --format=json | jq '.["@'"$src"'"]')
     util::echo info "source alias:"
     echo "$src_alias" | jq
     echo
@@ -179,7 +179,7 @@ list() {
     fi
 
     local src_envs
-    src_envs=$(drush-local sa | grep "pantheon.$pantheon_project" | sed "s/@pantheon\.${pantheon_project}\.//g")
+    src_envs=$(drush-local -Dssh.tty=0 sa | grep "pantheon.$pantheon_project" | sed "s/@pantheon\.${pantheon_project}\.//g")
     util::echo info "src-alias values:"
     echo "$src_envs"
     echo
