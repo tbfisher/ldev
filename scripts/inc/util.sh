@@ -51,7 +51,15 @@ util::prompt() {
 
 # Run command via sudo, writing command to screen for transparency.
 util::sudo() {
+    util::echo alert 'Attempting command via sudo:'
     echo "$*"
-    echo
-    sudo "$@"
+    response=$(util::prompt "Are you sure (y|N)?")
+    case "$response" in
+        y|yes)
+            sudo "$@"
+            ;;
+        *)
+            util::echo info "Command canceled."
+            ;;
+    esac
 }
