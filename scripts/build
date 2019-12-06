@@ -63,24 +63,24 @@ if [[ ! -z "$clean" ]]; then
     response=$(util::prompt "This will delete code, .env, docker containers, volumes, etc. Are you sure (y|N)?")
     case "$response" in
         y|yes)
-            docker-compose down --volumes --remove-orphans
-            if [ -f .env ]; then
-                rm .env
-            fi
-            if [ -d code ]; then
-                util::echo alert "Attempting to delete the code directory via sudo:"
-                util::sudo rm -r code
-            fi
-            if [ -d data ]; then
-                util::echo alert "Attempting to delete the data directory via sudo:"
-                util::sudo rm -r code
-            fi
-            cd "$pwd_dir";
             ;;
         *)
             util::echo info "Clean canceled."
+            cd "$pwd_dir";
+            exit 1
             ;;
     esac
+    docker-compose down --volumes --remove-orphans
+    if [ -f .env ]; then
+        rm .env
+    fi
+    if [ -d code ]; then
+        util::sudo rm -r code
+    fi
+    if [ -d data ]; then
+        util::sudo rm -r data
+    fi
+    cd "$pwd_dir";
     exit 0
 fi
 
